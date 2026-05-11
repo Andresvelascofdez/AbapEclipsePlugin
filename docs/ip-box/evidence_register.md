@@ -8,6 +8,5 @@ This documentation is a technical development record. It is not legal or tax adv
 | Eclipse runtime screenshot | TODO/TBC | To be captured manually by project owner | Capture `ABAP Assistant` view after runtime launch using anonymised ABAP snippet only. |
 | Live OpenAI smoke test output | TODO/TBC | `scripts/smoke-openai.ps1` | Requires a valid local `.env`; do not commit logs containing API keys or client data. |
 | Exported plug-in artifact | TODO/TBC | Eclipse PDE export destination | Record artifact name and Eclipse version after manual export. |
-| GitHub commit reference | TODO/TBC | `Andresvelascofdez/AbapEclipsePlugin` | Add commit hash after successful push to the correct repository. |
+| GitHub commit reference | Available | `Andresvelascofdez/AbapEclipsePlugin` | Initial scaffold pushed as commit `09793a4645a734b7d8e60751a199a4facf5400a6`. |
 | Owner acceptance notes | TODO/TBC | `human_contribution_log.md` | Add after project owner reviews and accepts or rejects the milestone. |
-

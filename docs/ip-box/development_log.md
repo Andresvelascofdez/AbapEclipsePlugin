@@ -10,7 +10,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Files changed: project metadata files, `src/com/anvel/abapeclipseassistant/**`, `test/com/anvel/abapeclipseassistant/**`, `scripts/**`, `README.md`, `CHANGELOG.md`, `docs/**`.
 - User/business reason: the project owner requested development of the tasks defined in `instrucciones.md`, recurring GitHub publishing discipline, a guide to install and test in Eclipse, and validation before confirming functionality.
 - Validation status: automated validation passed locally with `scripts/test.ps1` on 2026-05-11.
+- GitHub commit reference: `09793a4645a734b7d8e60751a199a4facf5400a6` pushed to `Andresvelascofdez/AbapEclipsePlugin`.
 - Open limitations: live OpenAI smoke testing requires a local non-committed `.env` with a valid API key. Eclipse runtime validation must be performed in an Eclipse PDE/ADT installation.
 - AI assistance used: yes, Codex generated the initial implementation and documentation under owner direction.
 - Human decision/review notes: the project owner confirmed the GitHub destination as `Andresvelascofdez/AbapEclipsePlugin` and explicitly instructed that it must not be mixed with `Andresvelascofdez/SapIsuAssistant`.
-
