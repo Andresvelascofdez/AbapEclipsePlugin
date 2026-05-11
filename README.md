@@ -1,0 +1,56 @@
+# ABAP Eclipse Assistant
+
+ABAP Eclipse Assistant is an Eclipse PDE plug-in prototype for SAP ABAP Development Tools workflows. It provides an Eclipse view that can load selected ABAP text, classify whether the context appears public SAP standard or custom/client-specific, redact sensitive values, and send a carefully constrained prompt to the OpenAI Responses API.
+
+The project is designed, directed, reviewed and validated by the project owner, using AI-assisted development tools to accelerate implementation.
+
+## Current Features
+
+- Eclipse view contribution: `Window > Show View > Other > ABAP Eclipse Assistant > ABAP Assistant`.
+- Assistant modes for explaining ABAP, finding possible defects, suggesting tests, proposing safe refactoring ideas, and general ABAP/ADT help.
+- Text selection loading from the active Eclipse editor.
+- Sensitive value redaction for OpenAI-style API keys, ticket references, handover references, invoice references, email addresses, and SAP client numbers.
+- Context classification to keep SAP standard/public knowledge separate from client-specific Z/Y/private knowledge.
+- OpenAI Responses API client using `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`.
+- Local core tests and metadata validation through `scripts/test.ps1`.
+- Optional live OpenAI smoke test through `scripts/smoke-openai.ps1`.
+
+## Repository And Secrets
+
+The intended GitHub repository is:
+
+`https://github.com/Andresvelascofdez/AbapEclipsePlugin`
+
+Do not commit real API keys. `.env` is intentionally ignored by git. Use `.env.example` as a template:
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+```
+
+If an API key was shared in a chat, log, screenshot, commit, or ticket, revoke it and create a new key before using the project.
+
+## Validation
+
+Run the automated validation from the project root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test.ps1
+```
+
+The validation compiles the core assistant and CLI classes with Java 17, runs core tests, validates Eclipse plug-in metadata, and scans tracked project files for accidental OpenAI-style API keys.
+
+## Installation And Testing
+
+See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md).
+
+## OpenAI API
+
+The implementation uses the OpenAI Responses API endpoint `/v1/responses`, with `store` set to `false` in requests. The default model is `gpt-5-mini` and can be changed with `OPENAI_MODEL`.
+
+Reference: https://platform.openai.com/docs/api-reference/responses
+
+## Disclaimer
+
+This repository contains technical development material. It is not legal or tax advice. Final IP Box eligibility, valuation and income attribution must be reviewed by qualified advisors.
+

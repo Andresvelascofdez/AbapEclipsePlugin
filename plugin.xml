@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+    <extension point="org.eclipse.ui.views">
+        <category
+            id="com.anvel.abapeclipseassistant.category"
+            name="ABAP Eclipse Assistant"/>
+        <view
+            id="com.anvel.abapeclipseassistant.views.assistant"
+            name="ABAP Assistant"
+            class="com.anvel.abapeclipseassistant.ui.AssistantView"
+            category="com.anvel.abapeclipseassistant.category"
+            restorable="true"/>
+    </extension>
+</plugin>
+

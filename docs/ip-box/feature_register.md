@@ -1,0 +1,14 @@
+# Feature Register
+
+This documentation is a technical development record. It is not legal or tax advice. Final IP Box eligibility, valuation and income attribution must be reviewed by qualified advisors.
+
+| Feature | Phase | Status | Business Purpose | Technical Description | Files/Modules | Validation Method | IP/Productivity Relevance |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Eclipse ABAP Assistant view | 0.1.0 | Implemented | Provide assistant access inside Eclipse/ADT workflows | PDE view contribution with input, output, mode selection and active editor selection loading | `plugin.xml`, `AssistantView.java` | Metadata validation and planned Eclipse runtime test | Reduces context switching for ABAP consulting work |
+| Assistant modes | 0.1.0 | Implemented | Support common ABAP analysis tasks | Modes for explanation, defect finding, test suggestions, refactoring ideas and general help | `AssistantMode.java`, `AssistantPromptBuilder.java` | Core tests | Structures repeatable ABAP assistance workflows |
+| Sensitive data redaction | 0.1.0 | Implemented | Reduce accidental exposure of project/client data | Redacts OpenAI-style keys, tickets, handovers, invoices, emails and SAP client numbers | `SensitiveDataRedactor.java` | Core tests and secret scan | Supports safe use in consulting environments |
+| SAP standard vs custom classification | 0.1.0 | Implemented | Keep public SAP knowledge separate from private custom knowledge | Classifies public, custom or mixed context using ABAP naming hints | `AbapContextClassifier.java` | Core tests | Reinforces knowledge-boundary discipline |
+| OpenAI Responses API client | 0.1.0 | Implemented | Connect assistant prompts to OpenAI models | Java `HttpClient` integration with `/v1/responses`, configurable model and endpoint | `OpenAiResponsesClient.java`, `OpenAiSettings.java` | Compile validation; optional live smoke test | Enables AI-assisted ABAP explanations and checks |
+| CLI smoke test | 0.1.0 | Implemented | Verify API integration without launching Eclipse | Command-line entry point and PowerShell script | `AssistantCli.java`, `scripts/smoke-openai.ps1` | Compiled by automated validation; live run requires `.env` | Speeds up integration validation |
+| Eclipse installation/testing guide | 0.1.0 | Implemented | Make the plugin testable by the owner | Spanish Markdown guide for local test, Eclipse import, runtime launch and export | `docs/INSTALL_ECLIPSE_AND_TEST.md` | Manual review | Supports reproducible validation |
+

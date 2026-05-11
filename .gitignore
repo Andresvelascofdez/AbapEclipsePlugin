@@ -1,0 +1,11 @@
+.env
+.metadata/
+bin/
+build/
+target/
+*.class
+*.jar
+*.log
+*.tmp
+*.bak
+
