@@ -42,6 +42,7 @@ Expected result:
 - A temporary smoke-test plugin is created.
 - Eclipse starts against a temporary workspace/configuration.
 - The smoke-test plugin opens `com.abap.assistant.ui.ChatView`.
+- The smoke-test plugin verifies that the returned view class is `com.abap.assistant.ui.ChatView` and that the Eclipse view site id matches `com.abap.assistant.ui.ChatView`.
 - Eclipse exits automatically.
 - The workspace log contains no ABAP Assistant view creation, icon or bundle resolution errors.
 
@@ -57,7 +58,7 @@ Expected result:
 - Old `.log` files are removed before launch so only new errors are assessed.
 - Persisted workbench state is kept.
 - The plugin id `com.abap.assistant`, view id `com.abap.assistant.ui.ChatView`, and icon `icons/abap_icon.png` resolve correctly.
-- The smoke-test plugin opens the persisted/current `ABAP Chat` view and exits successfully.
+- The smoke-test plugin opens the persisted/current `ABAP Chat` view, verifies the `ChatView` instance and exits successfully.
 
 ## Manual Follow-Up Tests
 

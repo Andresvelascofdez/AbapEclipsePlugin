@@ -99,6 +99,7 @@ import java.nio.file.Path;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -122,7 +123,13 @@ public final class SmokeStartup implements IStartup {
                     if (page == null) {
                         throw new IllegalStateException("No active workbench page available.");
                     }
-                    page.showView("com.abap.assistant.ui.ChatView");
+                    IViewPart view = page.showView("com.abap.assistant.ui.ChatView");
+                    if (!"com.abap.assistant.ui.ChatView".equals(view.getClass().getName())) {
+                        throw new IllegalStateException("Unexpected view class: " + view.getClass().getName());
+                    }
+                    if (!"com.abap.assistant.ui.ChatView".equals(view.getSite().getId())) {
+                        throw new IllegalStateException("Unexpected view site id: " + view.getSite().getId());
+                    }
                     Files.writeString(Path.of(marker), "PASS");
                 } catch (Throwable throwable) {
                     try {

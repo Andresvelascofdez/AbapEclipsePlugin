@@ -40,7 +40,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
 - Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120`.
 - Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState -TimeoutSeconds 120`.
-- Expected result: core tests pass; full UI compiles against the real Eclipse installation; temporary Eclipse runtime starts; the smoke-test plugin opens `com.abap.assistant.ui.ChatView`; `icons/abap_icon.png` resolves; no ABAP Assistant view creation or bundle resolution errors are written to the fresh runtime log.
+- Expected result: core tests pass; full UI compiles against the real Eclipse installation; temporary Eclipse runtime starts; the smoke-test plugin opens `com.abap.assistant.ui.ChatView`, verifies the returned view class name, verifies the view site id, confirms `icons/abap_icon.png` resolves, and finds no ABAP Assistant view creation or bundle resolution errors in the fresh runtime log.
 - Actual result: all three commands completed successfully. The Eclipse smoke marker contained `PASS`.
 - Status: Passed.
 - Issues found: the previous implementation used a new bundle/view identity that did not match the persisted runtime workspace. The runtime expected `com.abap.assistant` and `com.abap.assistant.ui.ChatView`.
