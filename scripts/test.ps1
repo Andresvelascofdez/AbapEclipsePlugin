@@ -26,7 +26,7 @@ if ($allSources.Count -eq 0) {
 
 [System.IO.File]::WriteAllLines($sourcesFile, $allSources, [System.Text.UTF8Encoding]::new($false))
 
-& javac -encoding UTF-8 --release 17 -d $classes "@$sourcesFile"
+& javac -encoding UTF-8 --release 11 -d $classes "@$sourcesFile"
 if ($LASTEXITCODE -ne 0) {
     throw "javac failed with exit code $LASTEXITCODE"
 }
@@ -48,6 +48,23 @@ if ($view.class -ne "com.anvel.abapeclipseassistant.ui.AssistantView") {
 $manifest = Get-Content -Path (Join-Path $root "META-INF\MANIFEST.MF") -Raw
 if ($manifest -notmatch "Bundle-SymbolicName: com\.anvel\.abapeclipseassistant") {
     throw "Manifest does not contain the expected Bundle-SymbolicName."
+}
+if ($manifest -notmatch "Bundle-RequiredExecutionEnvironment: JavaSE-11") {
+    throw "Manifest must keep the JavaSE-11 execution environment for Eclipse compatibility."
+}
+
+$javaSources = Get-ChildItem -Path (Join-Path $root "src"), (Join-Path $root "test") -Filter "*.java" -Recurse
+foreach ($source in $javaSources) {
+    $content = Get-Content -Path $source.FullName -Raw
+    if ($content -match '"""') {
+        throw "Java text blocks are not allowed while the project targets Java 11: $($source.FullName)"
+    }
+    if ($content -match '(?m)^\s*(public\s+|private\s+|protected\s+)?(static\s+)?record\s+') {
+        throw "Java records are not allowed while the project targets Java 11: $($source.FullName)"
+    }
+    if ($content -match 'instanceof\s+[A-Za-z0-9_<>, ?]+\s+[a-zA-Z_][A-Za-z0-9_]*\s*(?:&&|\)|\{)') {
+        throw "Pattern matching instanceof is not allowed while the project targets Java 11: $($source.FullName)"
+    }
 }
 
 $scannedFiles = Get-ChildItem -Path $root -Recurse -File |

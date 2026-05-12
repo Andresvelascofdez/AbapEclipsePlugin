@@ -13,23 +13,36 @@ final class JsonStrings {
         for (int index = 0; index < value.length(); index++) {
             char ch = value.charAt(index);
             switch (ch) {
-                case '"' -> escaped.append("\\\"");
-                case '\\' -> escaped.append("\\\\");
-                case '\b' -> escaped.append("\\b");
-                case '\f' -> escaped.append("\\f");
-                case '\n' -> escaped.append("\\n");
-                case '\r' -> escaped.append("\\r");
-                case '\t' -> escaped.append("\\t");
-                default -> {
+                case '"':
+                    escaped.append("\\\"");
+                    break;
+                case '\\':
+                    escaped.append("\\\\");
+                    break;
+                case '\b':
+                    escaped.append("\\b");
+                    break;
+                case '\f':
+                    escaped.append("\\f");
+                    break;
+                case '\n':
+                    escaped.append("\\n");
+                    break;
+                case '\r':
+                    escaped.append("\\r");
+                    break;
+                case '\t':
+                    escaped.append("\\t");
+                    break;
+                default:
                     if (ch < 0x20) {
-                        escaped.append("\\u%04x".formatted((int) ch));
+                        escaped.append(String.format("\\u%04x", (int) ch));
                     } else {
                         escaped.append(ch);
                     }
-                }
+                    break;
             }
         }
         return escaped.toString();
     }
 }
-

@@ -14,3 +14,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Open limitations: live OpenAI smoke testing requires a local non-committed `.env` with a valid API key. Eclipse runtime validation must be performed in an Eclipse PDE/ADT installation.
 - AI assistance used: yes, Codex generated the initial implementation and documentation under owner direction.
 - Human decision/review notes: the project owner confirmed the GitHub destination as `Andresvelascofdez/AbapEclipsePlugin` and explicitly instructed that it must not be mixed with `Andresvelascofdez/SapIsuAssistant`.
+
+## 2026-05-12 - Eclipse Import Error Handling
+
+- Feature/module worked on: Eclipse import prerequisites, Java compatibility and troubleshooting documentation.
+- Technical objective: address Eclipse workspace errors where SWT/JFace/PDE classes are not resolved during import.
+- Implementation summary: changed compiler and bundle execution environment to Java 11, removed Java 17-only language constructs from core/test code, added `scripts/check-eclipse-prereqs.ps1`, and documented the PDE/Target Platform fix.
+- Files changed: `.settings/org.eclipse.jdt.core.prefs`, `META-INF/MANIFEST.MF`, core Java files, tests, scripts, README, changelog, installation guide and IP Box logs.
+- User/business reason: the project owner reported Eclipse import errors from the Problems view.
+- Validation status: automated validation passed locally with `scripts/test.ps1` on 2026-05-12.
+- Open limitations: local environment still does not include a detectable Eclipse installation, so runtime UI validation remains TODO/TBC.
+- AI assistance used: yes.
+- Human decision/review notes: owner provided screenshot evidence of the Eclipse import issue.

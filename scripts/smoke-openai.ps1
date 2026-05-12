@@ -25,7 +25,7 @@ $allSources = @($coreSources + $cliSources)
 
 [System.IO.File]::WriteAllLines($sourcesFile, $allSources, [System.Text.UTF8Encoding]::new($false))
 
-& javac -encoding UTF-8 --release 17 -d $classes "@$sourcesFile"
+& javac -encoding UTF-8 --release 11 -d $classes "@$sourcesFile"
 if ($LASTEXITCODE -ne 0) {
     throw "javac failed with exit code $LASTEXITCODE"
 }
@@ -34,4 +34,3 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) {
     throw "OpenAI smoke test failed with exit code $LASTEXITCODE"
 }
-

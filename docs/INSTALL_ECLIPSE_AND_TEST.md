@@ -4,8 +4,8 @@ Esta guia explica como instalar y probar ABAP Eclipse Assistant sin mezclarlo co
 
 ## 1. Requisitos
 
-- Java 17 o superior.
-- Eclipse IDE con Plug-in Development Environment (PDE).
+- Java 11 o superior.
+- Eclipse IDE con Plug-in Development Environment (PDE). Un Eclipse solo para ABAP/ADT puede no traer PDE instalado.
 - SAP ABAP Development Tools si se quiere probar con editores ABAP reales.
 - Acceso al repositorio `https://github.com/Andresvelascofdez/AbapEclipsePlugin`.
 - Una API key de OpenAI nueva y no expuesta en chats, logs, commits ni capturas.
@@ -27,6 +27,29 @@ El test debe terminar con:
 All core tests passed.
 Validation completed successfully.
 ```
+
+## 2.1. Si Eclipse Muestra `org.eclipse Cannot Be Resolved`
+
+Los errores de la captura, por ejemplo `Button cannot be resolved to a type`, `SWT cannot be resolved to a variable` o `The import org.eclipse cannot be resolved`, indican que Eclipse no ha cargado las dependencias de plug-in. No es un error del codigo Java de `AssistantView`; falta PDE o no esta activa la Target Platform.
+
+Comprueba tu instalacion:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check-eclipse-prereqs.ps1 -EclipseHome "C:\ruta\a\eclipse"
+```
+
+Para corregirlo en Eclipse:
+
+1. Instala PDE desde `Help > Install New Software`.
+2. Busca e instala `Eclipse Plug-in Development Environment`.
+3. Reinicia Eclipse.
+4. Abre `Window > Preferences > Plug-in Development > Target Platform`.
+5. Activa `Running Platform`.
+6. Aplica cambios.
+7. Si habias importado el proyecto antes de instalar PDE, borralo del workspace sin borrar del disco y vuelve a importarlo.
+8. Ejecuta `Project > Clean`.
+
+Cuando este bien, el proyecto debe mostrar `Plug-in Dependencies` en el build path y desapareceran los errores de SWT/JFace/PDE.
 
 ## 3. Configurar OpenAI
 
@@ -112,4 +135,3 @@ Desde el Eclipse de desarrollo:
 - `javac is not recognized`: instala Java 17+ y comprueba el `PATH`.
 - La vista no aparece: revisa que PDE haya reconocido `plugin.xml` y que el proyecto no tenga errores.
 - Error HTTP de OpenAI: revisa la clave, el modelo configurado y la conectividad.
-

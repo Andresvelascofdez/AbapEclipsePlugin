@@ -4,7 +4,7 @@ Bundle-Name: ABAP Eclipse Assistant
 Bundle-SymbolicName: com.anvel.abapeclipseassistant;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: ANVEL Consulting
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
@@ -12,4 +12,3 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.swt
 Automatic-Module-Name: com.anvel.abapeclipseassistant
-

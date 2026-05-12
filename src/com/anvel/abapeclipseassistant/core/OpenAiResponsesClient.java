@@ -8,11 +8,10 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 public final class OpenAiResponsesClient implements AiClient {
-    private static final String INSTRUCTIONS = """
-        You are a careful SAP ABAP and Eclipse ADT assistant.
-        Provide practical guidance, keep public SAP knowledge separate from custom client code,
-        and do not invent unsupported evidence.
-        """;
+    private static final String INSTRUCTIONS = String.join(System.lineSeparator(),
+        "You are a careful SAP ABAP and Eclipse ADT assistant.",
+        "Provide practical guidance, keep public SAP knowledge separate from custom client code,",
+        "and do not invent unsupported evidence.");
 
     private final OpenAiSettings settings;
     private final HttpClient httpClient;
@@ -32,17 +31,16 @@ public final class OpenAiResponsesClient implements AiClient {
 
     @Override
     public String complete(String prompt) throws IOException, InterruptedException {
-        String requestBody = """
-            {
-              "model": "%s",
-              "instructions": "%s",
-              "input": "%s",
-              "store": false
-            }
-            """.formatted(
-                JsonStrings.escape(settings.model()),
-                JsonStrings.escape(INSTRUCTIONS.strip()),
-                JsonStrings.escape(prompt));
+        String requestBody = String.format(
+            "{%n" +
+                "  \"model\": \"%s\",%n" +
+                "  \"instructions\": \"%s\",%n" +
+                "  \"input\": \"%s\",%n" +
+                "  \"store\": false%n" +
+                "}",
+            JsonStrings.escape(settings.model()),
+            JsonStrings.escape(INSTRUCTIONS.strip()),
+            JsonStrings.escape(prompt));
 
         HttpRequest request = HttpRequest.newBuilder(URI.create(settings.endpoint()))
             .timeout(Duration.ofSeconds(90))
@@ -68,4 +66,3 @@ public final class OpenAiResponsesClient implements AiClient {
         return value.substring(0, maxLength) + "...";
     }
 }
-

@@ -5,14 +5,30 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
-public record OpenAiSettings(String apiKey, String model, String endpoint) {
+public final class OpenAiSettings {
     public static final String DEFAULT_MODEL = "gpt-5-mini";
     public static final String DEFAULT_ENDPOINT = "https://api.openai.com/v1/responses";
 
-    public OpenAiSettings {
-        apiKey = required(apiKey, "OPENAI_API_KEY");
-        model = optional(model).orElse(DEFAULT_MODEL);
-        endpoint = optional(endpoint).orElse(DEFAULT_ENDPOINT);
+    private final String apiKey;
+    private final String model;
+    private final String endpoint;
+
+    public OpenAiSettings(String apiKey, String model, String endpoint) {
+        this.apiKey = required(apiKey, "OPENAI_API_KEY");
+        this.model = optional(model).orElse(DEFAULT_MODEL);
+        this.endpoint = optional(endpoint).orElse(DEFAULT_ENDPOINT);
+    }
+
+    public String apiKey() {
+        return apiKey;
+    }
+
+    public String model() {
+        return model;
+    }
+
+    public String endpoint() {
+        return endpoint;
     }
 
     public static OpenAiSettings fromEnvironment() throws IOException {
@@ -58,4 +74,3 @@ public record OpenAiSettings(String apiKey, String model, String endpoint) {
         return null;
     }
 }
-

@@ -52,11 +52,10 @@ public final class AssistantCoreTest {
 
     private static void dotenvLoaderParsesQuotedValues() throws Exception {
         Path temp = Files.createTempFile("abap-assistant", ".env");
-        Files.writeString(temp, """
-            # comment
-            OPENAI_API_KEY="test-value"
-            OPENAI_MODEL=gpt-5-mini
-            """);
+        Files.writeString(temp, String.join(System.lineSeparator(),
+            "# comment",
+            "OPENAI_API_KEY=\"test-value\"",
+            "OPENAI_MODEL=gpt-5-mini"));
 
         Map<String, String> values = new DotEnvLoader().load(temp);
         assertEquals("test-value", values.get("OPENAI_API_KEY"), "Quoted dotenv values must be parsed.");
@@ -65,17 +64,16 @@ public final class AssistantCoreTest {
     }
 
     private static void extractorReadsResponsesOutputText() {
-        String json = """
-            {
-              "output": [{
-                "type": "message",
-                "content": [{
-                  "type": "output_text",
-                  "text": "Line 1\\nLine 2"
-                }]
-              }]
-            }
-            """;
+        String json = String.join(System.lineSeparator(),
+            "{",
+            "  \"output\": [{",
+            "    \"type\": \"message\",",
+            "    \"content\": [{",
+            "      \"type\": \"output_text\",",
+            "      \"text\": \"Line 1\\nLine 2\"",
+            "    }]",
+            "  }]",
+            "}");
 
         String text = new OpenAiTextExtractor().extractOutputText(json).orElseThrow();
         assertEquals("Line 1\nLine 2", text, "Responses output_text must be extracted and unescaped.");
@@ -117,4 +115,3 @@ public final class AssistantCoreTest {
         }
     }
 }
-

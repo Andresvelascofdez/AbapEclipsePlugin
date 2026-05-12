@@ -38,7 +38,17 @@ Run the automated validation from the project root:
 powershell -ExecutionPolicy Bypass -File scripts/test.ps1
 ```
 
-The validation compiles the core assistant and CLI classes with Java 17, runs core tests, validates Eclipse plug-in metadata, and scans tracked project files for accidental OpenAI-style API keys.
+The validation compiles the core assistant and CLI classes with Java 11, runs core tests, validates Eclipse plug-in metadata, and scans tracked project files for accidental OpenAI-style API keys.
+
+## Eclipse Import Prerequisites
+
+This project is an Eclipse plug-in project. The Eclipse installation used for development must include Plug-in Development Environment (PDE). If `AssistantView.java` shows errors such as `The import org.eclipse cannot be resolved`, `Button cannot be resolved to a type`, or `SWT cannot be resolved`, the Eclipse target platform is not resolving PDE/SWT/JFace dependencies.
+
+Check a local Eclipse installation with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check-eclipse-prereqs.ps1 -EclipseHome "C:\path\to\eclipse"
+```
 
 ## Installation And Testing
 
@@ -53,4 +63,3 @@ Reference: https://platform.openai.com/docs/api-reference/responses
 ## Disclaimer
 
 This repository contains technical development material. It is not legal or tax advice. Final IP Box eligibility, valuation and income attribution must be reviewed by qualified advisors.
-

@@ -64,28 +64,60 @@ public final class OpenAiTextExtractor {
 
             char escaped = json.charAt(index++);
             switch (escaped) {
-                case '"' -> result.append('"');
-                case '\\' -> result.append('\\');
-                case '/' -> result.append('/');
-                case 'b' -> result.append('\b');
-                case 'f' -> result.append('\f');
-                case 'n' -> result.append('\n');
-                case 'r' -> result.append('\r');
-                case 't' -> result.append('\t');
-                case 'u' -> {
+                case '"':
+                    result.append('"');
+                    break;
+                case '\\':
+                    result.append('\\');
+                    break;
+                case '/':
+                    result.append('/');
+                    break;
+                case 'b':
+                    result.append('\b');
+                    break;
+                case 'f':
+                    result.append('\f');
+                    break;
+                case 'n':
+                    result.append('\n');
+                    break;
+                case 'r':
+                    result.append('\r');
+                    break;
+                case 't':
+                    result.append('\t');
+                    break;
+                case 'u':
                     if (index + 4 <= json.length()) {
                         String hex = json.substring(index, index + 4);
                         result.append((char) Integer.parseInt(hex, 16));
                         index += 4;
                     }
-                }
-                default -> result.append(escaped);
+                    break;
+                default:
+                    result.append(escaped);
+                    break;
             }
         }
         return new ParsedString(result.toString(), index);
     }
 
-    private record ParsedString(String value, int nextIndex) {
+    private static final class ParsedString {
+        private final String value;
+        private final int nextIndex;
+
+        private ParsedString(String value, int nextIndex) {
+            this.value = value;
+            this.nextIndex = nextIndex;
+        }
+
+        private String value() {
+            return value;
+        }
+
+        private int nextIndex() {
+            return nextIndex;
+        }
     }
 }
-

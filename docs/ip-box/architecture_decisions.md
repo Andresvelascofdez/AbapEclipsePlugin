@@ -46,3 +46,13 @@ This documentation is a technical development record. It is not legal or tax adv
 - Relation to SAP/ABAP/Eclipse/ADT use case: ABAP custom objects often use Z/Y naming and can indicate client-specific scope.
 - Project owner decision: aligned with the owner's project instructions.
 
+## ADR-005 - Java 11 Baseline For Eclipse Compatibility
+
+- Context: the owner reported Eclipse import errors while validating the plug-in project.
+- Options considered: keep Java 17, move to Java 11, or add build-tool-specific dependency handling only.
+- Selected option: move the plug-in code and validation scripts to Java 11 compatibility.
+- Reason for selection: Java 11 is broadly compatible with Eclipse/ADT installations and still supports the required `HttpClient` API.
+- Expected benefit: fewer import/build issues in Eclipse workspaces that are not configured for Java 17.
+- Risks/limitations: future features must avoid newer Java language constructs unless the baseline is deliberately raised.
+- Relation to SAP/ABAP/Eclipse/ADT use case: ADT users may run Eclipse packages with conservative Java baselines.
+- Project owner decision: change made in response to owner-reported Eclipse import errors.

@@ -18,3 +18,10 @@ This documentation is a technical development record. It is not legal or tax adv
 - Manual testing by owner: TODO/TBC after Eclipse runtime validation.
 - Review/acceptance decision: TODO/TBC.
 
+## 2026-05-12 - Eclipse Import Error Report
+
+- Requirement/problem reported by owner: importing the project into Eclipse produced errors resolving `org.eclipse.*`, SWT/JFace widgets and `ViewPart`.
+- Evidence provided by owner: screenshots from the Eclipse Problems view showing unresolved `Button`, `Combo`, `Composite`, `SWT`, `ISelectionService`, `Job`, `Status` and related Eclipse types.
+- Functional decision made by owner: request clarification/fix based on observed import errors.
+- Codex response: adjusted Java baseline to 11, documented PDE/Target Platform requirements, and added an Eclipse prerequisite diagnostic script.
+- Manual testing by owner: TODO/TBC after installing or activating PDE and cleaning/reimporting the project.

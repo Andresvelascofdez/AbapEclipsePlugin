@@ -82,7 +82,8 @@ public final class AssistantView extends ViewPart {
         ISelectionService selectionService = getSite().getWorkbenchWindow().getSelectionService();
         ISelection selection = editor == null ? selectionService.getSelection() : editor.getSite().getSelectionProvider().getSelection();
 
-        if (selection instanceof ITextSelection textSelection && !textSelection.getText().isBlank()) {
+        if (selection instanceof ITextSelection && !((ITextSelection) selection).getText().isBlank()) {
+            ITextSelection textSelection = (ITextSelection) selection;
             inputText.setText(textSelection.getText());
             setStatus("Selection loaded");
         } else {
@@ -158,4 +159,3 @@ public final class AssistantView extends ViewPart {
         return data;
     }
 }
-
