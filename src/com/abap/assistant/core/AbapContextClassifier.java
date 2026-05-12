@@ -1,4 +1,4 @@
-package com.anvel.abapeclipseassistant.core;
+package com.abap.assistant.core;
 
 import java.util.regex.Pattern;
 

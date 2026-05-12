@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-    <name>com.anvel.abapeclipseassistant</name>
-    <comment>ABAP Eclipse Assistant plugin.</comment>
+    <name>com.abap.assistant</name>
+    <comment>ABAP Chat Assistant plugin.</comment>
     <projects>
     </projects>
     <buildSpec>

@@ -6,7 +6,7 @@ This documentation is a technical development record. It is not legal or tax adv
 
 - Context: the project needs to run inside Eclipse/ADT while remaining testable outside Eclipse.
 - Options considered: a pure Eclipse UI implementation, a separate command line tool, or an Eclipse plug-in with a Java core.
-- Selected option: Eclipse PDE plug-in with core services under `com.anvel.abapeclipseassistant.core` and Eclipse UI code under `com.anvel.abapeclipseassistant.ui`.
+- Selected option: Eclipse PDE plug-in with core services under `com.abap.assistant.core` and Eclipse UI code under `com.abap.assistant.ui`.
 - Reason for selection: the UI can integrate with Eclipse while core prompt, privacy, and OpenAI logic can be compiled and tested locally without an Eclipse target platform.
 - Expected benefit: faster automated validation and lower risk when changing assistant logic.
 - Risks/limitations: full UI validation still requires Eclipse PDE/ADT.
@@ -56,3 +56,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: future features must avoid newer Java language constructs unless the baseline is deliberately raised.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ADT users may run Eclipse packages with conservative Java baselines.
 - Project owner decision: change made in response to owner-reported Eclipse import errors.
+
+## ADR-006 - Runtime Bundle Identity Aligned With Persisted Eclipse View
+
+- Context: the Eclipse runtime workspace reported failures for `com.abap.assistant.ui.ChatView` and `platform:/plugin/com.abap.assistant/icons/abap_icon.png`.
+- Options considered: ask the owner to clear persisted workspace state, keep the new `com.anvel.abapeclipseassistant` identity, or align the plugin with the persisted runtime identity.
+- Selected option: align the bundle id, Java packages, view id and icon resource to `com.abap.assistant`.
+- Reason for selection: this directly resolves the runtime identity that Eclipse is already trying to load.
+- Expected benefit: existing runtime workspaces and fresh workspaces can resolve the same view contribution.
+- Risks/limitations: repository documentation must remain clear that the GitHub project is `AbapEclipsePlugin` even though the runtime bundle id is `com.abap.assistant`.
+- Relation to SAP/ABAP/Eclipse/ADT use case: Eclipse view ids are persisted by the workbench and must remain stable for reliable ADT usage.
+- Project owner decision: change made in response to owner-provided runtime screenshots and log file.

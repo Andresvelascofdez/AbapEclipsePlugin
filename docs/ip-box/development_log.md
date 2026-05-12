@@ -4,10 +4,10 @@ This documentation is a technical development record. It is not legal or tax adv
 
 ## 2026-05-11 - Initial Eclipse Plug-in Scaffold
 
-- Feature/module worked on: ABAP Eclipse Assistant initial plug-in, core assistant services, OpenAI integration layer, validation scripts and documentation.
+- Feature/module worked on: ABAP Chat Assistant initial plug-in, core assistant services, OpenAI integration layer, validation scripts and documentation.
 - Technical objective: create a separated Eclipse PDE project for `Andresvelascofdez/AbapEclipsePlugin` without mixing it with `SapIsuAssistant`.
-- Implementation summary: created Eclipse plug-in metadata, ABAP Assistant view, core prompt builder, privacy classifier, redactor, dotenv loader, OpenAI Responses API client, CLI smoke test, automated tests, README, changelog and installation guide.
-- Files changed: project metadata files, `src/com/anvel/abapeclipseassistant/**`, `test/com/anvel/abapeclipseassistant/**`, `scripts/**`, `README.md`, `CHANGELOG.md`, `docs/**`.
+- Implementation summary: created Eclipse plug-in metadata, ABAP Chat view, core prompt builder, privacy classifier, redactor, dotenv loader, OpenAI Responses API client, CLI smoke test, automated tests, README, changelog and installation guide.
+- Files changed: project metadata files, `src/com/abap/assistant/**`, `test/com/abap/assistant/**`, `scripts/**`, `README.md`, `CHANGELOG.md`, `docs/**`.
 - User/business reason: the project owner requested development of the tasks defined in `instrucciones.md`, recurring GitHub publishing discipline, a guide to install and test in Eclipse, and validation before confirming functionality.
 - Validation status: automated validation passed locally with `scripts/test.ps1` on 2026-05-11.
 - GitHub commit reference: `09793a4645a734b7d8e60751a199a4facf5400a6` pushed to `Andresvelascofdez/AbapEclipsePlugin`.
@@ -26,3 +26,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Open limitations: local environment still does not include a detectable Eclipse installation, so runtime UI validation remains TODO/TBC.
 - AI assistance used: yes.
 - Human decision/review notes: owner provided screenshot evidence of the Eclipse import issue.
+
+## 2026-05-12 - Eclipse Runtime Validation And Bundle Identity Fix
+
+- Feature/module worked on: Eclipse runtime identity, ABAP Chat view contribution, icon packaging and Eclipse smoke tests.
+- Technical objective: make the plugin match the persisted Eclipse runtime identity `com.abap.assistant` / `com.abap.assistant.ui.ChatView` and prove it opens in Eclipse.
+- Implementation summary: renamed Java packages and bundle metadata to `com.abap.assistant`, set the view id/class to `com.abap.assistant.ui.ChatView`, added `icons/abap_icon.png`, added `scripts/test-eclipse.ps1`, and documented the Eclipse test plan.
+- Files changed: `.project`, `META-INF/MANIFEST.MF`, `plugin.xml`, `build.properties`, `src/com/abap/assistant/**`, `test/com/abap/assistant/**`, `icons/abap_icon.png`, `scripts/**`, `docs/**`, `README.md`, `CHANGELOG.md`.
+- User/business reason: the project owner reported that previous validation did not actually run inside Eclipse and provided Eclipse runtime errors.
+- Validation status: `scripts/test.ps1`, clean Eclipse runtime smoke test, and persisted workspace Eclipse smoke test passed on 2026-05-12.
+- Open limitations: live OpenAI API call still requires a local valid `.env`; no real client data should be used in smoke tests.
+- AI assistance used: yes.
+- Human decision/review notes: owner challenged the insufficient validation and required Eclipse-based testing before confirmation.

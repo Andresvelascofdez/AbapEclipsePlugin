@@ -1,4 +1,4 @@
-package com.anvel.abapeclipseassistant.core;
+package com.abap.assistant.core;
 
 public final class AssistantService {
     private final AssistantPromptBuilder promptBuilder;

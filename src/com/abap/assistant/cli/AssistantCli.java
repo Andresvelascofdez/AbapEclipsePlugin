@@ -1,14 +1,14 @@
-package com.anvel.abapeclipseassistant.cli;
+package com.abap.assistant.cli;
 
-import com.anvel.abapeclipseassistant.core.AbapContextClassifier;
-import com.anvel.abapeclipseassistant.core.AssistantMode;
-import com.anvel.abapeclipseassistant.core.AssistantPromptBuilder;
-import com.anvel.abapeclipseassistant.core.AssistantRequest;
-import com.anvel.abapeclipseassistant.core.AssistantResponse;
-import com.anvel.abapeclipseassistant.core.AssistantService;
-import com.anvel.abapeclipseassistant.core.OpenAiResponsesClient;
-import com.anvel.abapeclipseassistant.core.OpenAiSettings;
-import com.anvel.abapeclipseassistant.core.SensitiveDataRedactor;
+import com.abap.assistant.core.AbapContextClassifier;
+import com.abap.assistant.core.AssistantMode;
+import com.abap.assistant.core.AssistantPromptBuilder;
+import com.abap.assistant.core.AssistantRequest;
+import com.abap.assistant.core.AssistantResponse;
+import com.abap.assistant.core.AssistantService;
+import com.abap.assistant.core.OpenAiResponsesClient;
+import com.abap.assistant.core.OpenAiSettings;
+import com.abap.assistant.core.SensitiveDataRedactor;
 
 public final class AssistantCli {
     private AssistantCli() {

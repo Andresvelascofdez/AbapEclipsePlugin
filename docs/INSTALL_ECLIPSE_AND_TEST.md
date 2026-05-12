@@ -1,6 +1,6 @@
 # Instalacion Y Prueba En Eclipse
 
-Esta guia explica como instalar y probar ABAP Eclipse Assistant sin mezclarlo con `SapIsuAssistant`.
+Esta guia explica como instalar y probar ABAP Chat Assistant sin mezclarlo con `SapIsuAssistant`.
 
 ## 1. Requisitos
 
@@ -28,9 +28,21 @@ All core tests passed.
 Validation completed successfully.
 ```
 
+Ejecuta tambien la prueba runtime real con Eclipse:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
+```
+
+Si vienes de un workspace que ya tenia la vista `ABAP Chat` persistida y dio errores como `Unable to resolve plug-in "com.abap.assistant"` o `platform:/plugin/com.abap.assistant/icons/abap_icon.png`, ejecuta:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState
+```
+
 ## 2.1. Si Eclipse Muestra `org.eclipse Cannot Be Resolved`
 
-Los errores de la captura, por ejemplo `Button cannot be resolved to a type`, `SWT cannot be resolved to a variable` o `The import org.eclipse cannot be resolved`, indican que Eclipse no ha cargado las dependencias de plug-in. No es un error del codigo Java de `AssistantView`; falta PDE o no esta activa la Target Platform.
+Los errores de la captura, por ejemplo `Button cannot be resolved to a type`, `SWT cannot be resolved to a variable` o `The import org.eclipse cannot be resolved`, indican que Eclipse no ha cargado las dependencias de plug-in. No es un error del codigo Java de `ChatView`; falta PDE o no esta activa la Target Platform.
 
 Comprueba tu instalacion:
 
@@ -91,7 +103,7 @@ La salida debe mostrar el `Privacy scope` y una respuesta del modelo. Esta prueb
 C:\Users\Admin\SapAssistant\AbapEclipseAssistant
 ```
 
-5. Importa el proyecto `com.anvel.abapeclipseassistant`.
+5. Importa el proyecto `com.abap.assistant`.
 6. Comprueba que Eclipse no muestra errores de PDE o JDT.
 
 ## 6. Ejecutar En Un Eclipse De Prueba
@@ -101,7 +113,7 @@ C:\Users\Admin\SapAssistant\AbapEclipseAssistant
 3. En el Eclipse runtime, abre:
 
 ```text
-Window > Show View > Other > ABAP Eclipse Assistant > ABAP Assistant
+Window > Show View > Other > ABAP Chat Assistant > ABAP Chat
 ```
 
 4. Abre un editor ABAP o pega texto ABAP en la vista.
@@ -115,11 +127,11 @@ Desde el Eclipse de desarrollo:
 
 1. Ve a `File > Export`.
 2. Selecciona `Plug-in Development > Deployable plug-ins and fragments`.
-3. Selecciona `com.anvel.abapeclipseassistant`.
+3. Selecciona `com.abap.assistant`.
 4. Elige una carpeta de destino.
 5. Copia el `.jar` generado a la carpeta `dropins` de tu instalacion Eclipse.
 6. Reinicia Eclipse.
-7. Abre la vista `ABAP Assistant` desde `Window > Show View > Other`.
+7. Abre la vista `ABAP Chat` desde `Window > Show View > Other`.
 
 ## 8. Pruebas Recomendadas
 

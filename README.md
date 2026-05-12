@@ -1,12 +1,12 @@
-# ABAP Eclipse Assistant
+# ABAP Chat Assistant
 
-ABAP Eclipse Assistant is an Eclipse PDE plug-in prototype for SAP ABAP Development Tools workflows. It provides an Eclipse view that can load selected ABAP text, classify whether the context appears public SAP standard or custom/client-specific, redact sensitive values, and send a carefully constrained prompt to the OpenAI Responses API.
+ABAP Chat Assistant is an Eclipse PDE plug-in prototype for SAP ABAP Development Tools workflows. It provides an Eclipse view that can load selected ABAP text, classify whether the context appears public SAP standard or custom/client-specific, redact sensitive values, and send a carefully constrained prompt to the OpenAI Responses API.
 
 The project is designed, directed, reviewed and validated by the project owner, using AI-assisted development tools to accelerate implementation.
 
 ## Current Features
 
-- Eclipse view contribution: `Window > Show View > Other > ABAP Eclipse Assistant > ABAP Assistant`.
+- Eclipse view contribution: `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
 - Assistant modes for explaining ABAP, finding possible defects, suggesting tests, proposing safe refactoring ideas, and general ABAP/ADT help.
 - Text selection loading from the active Eclipse editor.
 - Sensitive value redaction for OpenAI-style API keys, ticket references, handover references, invoice references, email addresses, and SAP client numbers.
@@ -38,11 +38,23 @@ Run the automated validation from the project root:
 powershell -ExecutionPolicy Bypass -File scripts/test.ps1
 ```
 
-The validation compiles the core assistant and CLI classes with Java 11, runs core tests, validates Eclipse plug-in metadata, and scans tracked project files for accidental OpenAI-style API keys.
+The validation compiles the core assistant and CLI classes with Java 11, runs core tests, validates Eclipse plug-in metadata, verifies the icon, and scans tracked project files for accidental OpenAI-style API keys.
+
+Run the Eclipse runtime smoke test against a real Eclipse/PDE installation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
+```
+
+To reproduce the previously reported persisted-workspace issue, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState
+```
 
 ## Eclipse Import Prerequisites
 
-This project is an Eclipse plug-in project. The Eclipse installation used for development must include Plug-in Development Environment (PDE). If `AssistantView.java` shows errors such as `The import org.eclipse cannot be resolved`, `Button cannot be resolved to a type`, or `SWT cannot be resolved`, the Eclipse target platform is not resolving PDE/SWT/JFace dependencies.
+This project is an Eclipse plug-in project. The Eclipse installation used for development must include Plug-in Development Environment (PDE). If `ChatView.java` shows errors such as `The import org.eclipse cannot be resolved`, `Button cannot be resolved to a type`, or `SWT cannot be resolved`, the Eclipse target platform is not resolving PDE/SWT/JFace dependencies.
 
 Check a local Eclipse installation with:
 
@@ -52,7 +64,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-eclipse-prereqs.ps1 -Ecli
 
 ## Installation And Testing
 
-See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md).
+See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md) and [docs/ECLIPSE_TEST_PLAN.md](docs/ECLIPSE_TEST_PLAN.md).
 
 ## OpenAI API
 

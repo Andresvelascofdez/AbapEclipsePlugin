@@ -1,4 +1,4 @@
-package com.anvel.abapeclipseassistant.core;
+package com.abap.assistant.core;
 
 import java.io.IOException;
 import java.nio.file.Path;

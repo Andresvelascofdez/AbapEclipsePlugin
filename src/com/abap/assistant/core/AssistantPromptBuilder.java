@@ -1,4 +1,4 @@
-package com.anvel.abapeclipseassistant.core;
+package com.abap.assistant.core;
 
 public final class AssistantPromptBuilder {
     private final SensitiveDataRedactor redactor;
@@ -17,7 +17,7 @@ public final class AssistantPromptBuilder {
         boolean redacted = !original.equals(redactor.redact(original));
 
         String template = String.join(System.lineSeparator(),
-            "You are ABAP Eclipse Assistant, helping with SAP ABAP and Eclipse ADT work.",
+            "You are ABAP Chat Assistant, helping with SAP ABAP and Eclipse ADT work.",
             "",
             "Operating rules:",
             "- Keep SAP standard/public knowledge separate from client-specific Z/Y/private knowledge.",

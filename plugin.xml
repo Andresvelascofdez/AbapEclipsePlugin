@@ -3,14 +3,14 @@
 <plugin>
     <extension point="org.eclipse.ui.views">
         <category
-            id="com.anvel.abapeclipseassistant.category"
-            name="ABAP Eclipse Assistant"/>
+            id="com.abap.assistant.category"
+            name="ABAP Chat Assistant"/>
         <view
-            id="com.anvel.abapeclipseassistant.views.assistant"
-            name="ABAP Assistant"
-            class="com.anvel.abapeclipseassistant.ui.AssistantView"
-            category="com.anvel.abapeclipseassistant.category"
+            id="com.abap.assistant.ui.ChatView"
+            name="ABAP Chat"
+            class="com.abap.assistant.ui.ChatView"
+            category="com.abap.assistant.category"
+            icon="icons/abap_icon.png"
             restorable="true"/>
     </extension>
 </plugin>
-

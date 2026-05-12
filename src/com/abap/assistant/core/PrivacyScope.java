@@ -1,4 +1,4 @@
-package com.anvel.abapeclipseassistant.core;
+package com.abap.assistant.core;
 
 public enum PrivacyScope {
     SAP_STANDARD_PUBLIC,

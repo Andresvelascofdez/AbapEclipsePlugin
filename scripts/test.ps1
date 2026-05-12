@@ -15,8 +15,8 @@ if (Test-Path -LiteralPath $classes) {
 
 New-Item -ItemType Directory -Force -Path $classes | Out-Null
 
-$coreSources = Get-ChildItem -Path (Join-Path $root "src\com\anvel\abapeclipseassistant\core") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
-$cliSources = Get-ChildItem -Path (Join-Path $root "src\com\anvel\abapeclipseassistant\cli") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
+$coreSources = Get-ChildItem -Path (Join-Path $root "src\com\abap\assistant\core") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
+$cliSources = Get-ChildItem -Path (Join-Path $root "src\com\abap\assistant\cli") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
 $testSources = Get-ChildItem -Path (Join-Path $root "test") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
 $allSources = @($coreSources + $cliSources + $testSources)
 
@@ -31,22 +31,34 @@ if ($LASTEXITCODE -ne 0) {
     throw "javac failed with exit code $LASTEXITCODE"
 }
 
-& java -cp $classes com.anvel.abapeclipseassistant.core.AssistantCoreTest
+& java -cp $classes com.abap.assistant.core.AssistantCoreTest
 if ($LASTEXITCODE -ne 0) {
     throw "Core tests failed with exit code $LASTEXITCODE"
 }
 
 [xml]$pluginXml = Get-Content -Path (Join-Path $root "plugin.xml")
 $view = $pluginXml.plugin.extension.view
-if ($view.id -ne "com.anvel.abapeclipseassistant.views.assistant") {
+if ($view.id -ne "com.abap.assistant.ui.ChatView") {
     throw "plugin.xml does not expose the expected assistant view id."
 }
-if ($view.class -ne "com.anvel.abapeclipseassistant.ui.AssistantView") {
-    throw "plugin.xml does not point to the expected AssistantView class."
+if ($view.class -ne "com.abap.assistant.ui.ChatView") {
+    throw "plugin.xml does not point to the expected ChatView class."
+}
+if ($view.icon -ne "icons/abap_icon.png") {
+    throw "plugin.xml does not point to the expected ABAP Chat icon."
+}
+
+$iconPath = Join-Path $root "icons\abap_icon.png"
+if (-not (Test-Path -LiteralPath $iconPath)) {
+    throw "ABAP Chat icon is missing: $iconPath"
+}
+$iconBytes = [System.IO.File]::ReadAllBytes($iconPath)
+if ($iconBytes.Length -lt 8 -or $iconBytes[0] -ne 0x89 -or $iconBytes[1] -ne 0x50 -or $iconBytes[2] -ne 0x4E -or $iconBytes[3] -ne 0x47) {
+    throw "ABAP Chat icon is not a valid PNG file header: $iconPath"
 }
 
 $manifest = Get-Content -Path (Join-Path $root "META-INF\MANIFEST.MF") -Raw
-if ($manifest -notmatch "Bundle-SymbolicName: com\.anvel\.abapeclipseassistant") {
+if ($manifest -notmatch "Bundle-SymbolicName: com\.abap\.assistant") {
     throw "Manifest does not contain the expected Bundle-SymbolicName."
 }
 if ($manifest -notmatch "Bundle-RequiredExecutionEnvironment: JavaSE-11") {
@@ -55,6 +67,10 @@ if ($manifest -notmatch "Bundle-RequiredExecutionEnvironment: JavaSE-11") {
 
 $javaSources = Get-ChildItem -Path (Join-Path $root "src"), (Join-Path $root "test") -Filter "*.java" -Recurse
 foreach ($source in $javaSources) {
+    $bytes = [System.IO.File]::ReadAllBytes($source.FullName)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+        throw "Java source contains a UTF-8 BOM that breaks javac: $($source.FullName)"
+    }
     $content = Get-Content -Path $source.FullName -Raw
     if ($content -match '"""') {
         throw "Java text blocks are not allowed while the project targets Java 11: $($source.FullName)"

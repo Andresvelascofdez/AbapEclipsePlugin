@@ -25,3 +25,11 @@ This documentation is a technical development record. It is not legal or tax adv
 - Functional decision made by owner: request clarification/fix based on observed import errors.
 - Codex response: adjusted Java baseline to 11, documented PDE/Target Platform requirements, and added an Eclipse prerequisite diagnostic script.
 - Manual testing by owner: TODO/TBC after installing or activating PDE and cleaning/reimporting the project.
+
+## 2026-05-12 - Runtime Validation Challenge
+
+- Requirement/problem reported by owner: Codex had not validated the plugin inside Eclipse despite being asked to test before confirming.
+- Evidence provided by owner: screenshots and `java.lang.Exception.txt` showing Eclipse could not create `com.abap.assistant.ui.ChatView` and could not resolve `com.abap.assistant` icon resources.
+- Functional decision made by owner: require an Eclipse test plan, code rework, execution of those tests, and cleanup of generated junk files.
+- Codex response: aligned bundle/view identity with the runtime workspace, added icon packaging, created Eclipse runtime smoke tests, and executed them against the local Eclipse installation.
+- Manual testing by owner: TODO/TBC after pulling the fixed version.

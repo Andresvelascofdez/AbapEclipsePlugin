@@ -19,8 +19,8 @@ if (Test-Path -LiteralPath $classes) {
 
 New-Item -ItemType Directory -Force -Path $classes | Out-Null
 
-$coreSources = Get-ChildItem -Path (Join-Path $root "src\com\anvel\abapeclipseassistant\core") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
-$cliSources = Get-ChildItem -Path (Join-Path $root "src\com\anvel\abapeclipseassistant\cli") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
+$coreSources = Get-ChildItem -Path (Join-Path $root "src\com\abap\assistant\core") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
+$cliSources = Get-ChildItem -Path (Join-Path $root "src\com\abap\assistant\cli") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
 $allSources = @($coreSources + $cliSources)
 
 [System.IO.File]::WriteAllLines($sourcesFile, $allSources, [System.Text.UTF8Encoding]::new($false))
@@ -30,7 +30,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "javac failed with exit code $LASTEXITCODE"
 }
 
-& java -cp $classes com.anvel.abapeclipseassistant.cli.AssistantCli $Prompt
+& java -cp $classes com.abap.assistant.cli.AssistantCli $Prompt
 if ($LASTEXITCODE -ne 0) {
     throw "OpenAI smoke test failed with exit code $LASTEXITCODE"
 }

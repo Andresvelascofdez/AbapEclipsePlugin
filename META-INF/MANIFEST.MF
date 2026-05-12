@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: ABAP Eclipse Assistant
-Bundle-SymbolicName: com.anvel.abapeclipseassistant;singleton:=true
+Bundle-Name: ABAP Chat Assistant
+Bundle-SymbolicName: com.abap.assistant;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: ANVEL Consulting
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -11,4 +11,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface,
  org.eclipse.jface.text,
  org.eclipse.swt
-Automatic-Module-Name: com.anvel.abapeclipseassistant
+Automatic-Module-Name: com.abap.assistant

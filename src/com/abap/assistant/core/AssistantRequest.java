@@ -1,4 +1,4 @@
-package com.anvel.abapeclipseassistant.core;
+package com.abap.assistant.core;
 
 public final class AssistantRequest {
     private final AssistantMode mode;

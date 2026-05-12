@@ -1,14 +1,14 @@
-package com.anvel.abapeclipseassistant.ui;
+package com.abap.assistant.ui;
 
-import com.anvel.abapeclipseassistant.core.AbapContextClassifier;
-import com.anvel.abapeclipseassistant.core.AssistantMode;
-import com.anvel.abapeclipseassistant.core.AssistantPromptBuilder;
-import com.anvel.abapeclipseassistant.core.AssistantRequest;
-import com.anvel.abapeclipseassistant.core.AssistantResponse;
-import com.anvel.abapeclipseassistant.core.AssistantService;
-import com.anvel.abapeclipseassistant.core.OpenAiResponsesClient;
-import com.anvel.abapeclipseassistant.core.OpenAiSettings;
-import com.anvel.abapeclipseassistant.core.SensitiveDataRedactor;
+import com.abap.assistant.core.AbapContextClassifier;
+import com.abap.assistant.core.AssistantMode;
+import com.abap.assistant.core.AssistantPromptBuilder;
+import com.abap.assistant.core.AssistantRequest;
+import com.abap.assistant.core.AssistantResponse;
+import com.abap.assistant.core.AssistantService;
+import com.abap.assistant.core.OpenAiResponsesClient;
+import com.abap.assistant.core.OpenAiSettings;
+import com.abap.assistant.core.SensitiveDataRedactor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -29,8 +29,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.part.ViewPart;
 
-public final class AssistantView extends ViewPart {
-    public static final String ID = "com.anvel.abapeclipseassistant.views.assistant";
+public final class ChatView extends ViewPart {
+    public static final String ID = "com.abap.assistant.ui.ChatView";
 
     private Combo modeCombo;
     private Text inputText;
@@ -104,7 +104,7 @@ public final class AssistantView extends ViewPart {
         outputText.setText("");
         setStatus("Calling OpenAI");
 
-        Job job = new Job("ABAP Eclipse Assistant request") {
+        Job job = new Job("ABAP Chat Assistant request") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
@@ -124,7 +124,7 @@ public final class AssistantView extends ViewPart {
                         setStatus("Request failed");
                         setBusy(false);
                     });
-                    return new Status(IStatus.ERROR, "com.anvel.abapeclipseassistant", exception.getMessage(), exception);
+                    return new Status(IStatus.ERROR, "com.abap.assistant", exception.getMessage(), exception);
                 }
             }
         };
