@@ -2,6 +2,9 @@ package com.abap.assistant.core;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,30 +34,53 @@ public final class OpenAiSettings {
         return endpoint;
     }
 
-    public static OpenAiSettings fromEnvironment() throws IOException {
-        Map<String, String> dotenv = loadDotEnv();
+    public static OpenAiSettings fromEnvironment(Path... dotenvCandidates) throws IOException {
+        DotEnvSearchResult dotenv = loadDotEnv(dotenvCandidates);
         String apiKey = firstPresent(
             System.getProperty("OPENAI_API_KEY"),
             System.getenv("OPENAI_API_KEY"),
-            dotenv.get("OPENAI_API_KEY"));
+            dotenv.values().get("OPENAI_API_KEY"));
         String model = firstPresent(
             System.getProperty("OPENAI_MODEL"),
             System.getenv("OPENAI_MODEL"),
-            dotenv.get("OPENAI_MODEL"),
+            dotenv.values().get("OPENAI_MODEL"),
             DEFAULT_MODEL);
         String endpoint = firstPresent(
             System.getProperty("OPENAI_BASE_URL"),
             System.getenv("OPENAI_BASE_URL"),
-            dotenv.get("OPENAI_BASE_URL"),
+            dotenv.values().get("OPENAI_BASE_URL"),
             DEFAULT_ENDPOINT);
 
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalArgumentException("OPENAI_API_KEY is required. Checked .env locations: " + dotenv.searchedPathsSummary());
+        }
         return new OpenAiSettings(apiKey, model, endpoint);
     }
 
-    private static Map<String, String> loadDotEnv() throws IOException {
+    private static DotEnvSearchResult loadDotEnv(Path... dotenvCandidates) throws IOException {
+        List<Path> searchedPaths = new ArrayList<>();
+        DotEnvLoader loader = new DotEnvLoader();
         String explicitPath = firstPresent(System.getProperty("ABAP_ECLIPSE_ASSISTANT_ENV_FILE"), System.getenv("ABAP_ECLIPSE_ASSISTANT_ENV_FILE"));
-        Path path = explicitPath == null ? Path.of(".env") : Path.of(explicitPath);
-        return new DotEnvLoader().load(path);
+        if (explicitPath != null) {
+            Path path = Path.of(explicitPath);
+            searchedPaths.add(path);
+            return new DotEnvSearchResult(loader.load(path), searchedPaths);
+        }
+
+        for (Path candidate : dotenvCandidates) {
+            if (candidate == null) {
+                continue;
+            }
+            searchedPaths.add(candidate);
+            Map<String, String> values = loader.load(candidate);
+            if (!values.isEmpty()) {
+                return new DotEnvSearchResult(values, searchedPaths);
+            }
+        }
+
+        Path defaultPath = Path.of(".env");
+        searchedPaths.add(defaultPath);
+        return new DotEnvSearchResult(loader.load(defaultPath), searchedPaths);
     }
 
     private static String required(String value, String name) {
@@ -72,5 +98,34 @@ public final class OpenAiSettings {
             }
         }
         return null;
+    }
+
+    private static final class DotEnvSearchResult {
+        private final Map<String, String> values;
+        private final List<Path> searchedPaths;
+
+        private DotEnvSearchResult(Map<String, String> values, List<Path> searchedPaths) {
+            this.values = values == null ? Collections.emptyMap() : values;
+            this.searchedPaths = searchedPaths == null ? Collections.emptyList() : searchedPaths;
+        }
+
+        private Map<String, String> values() {
+            return values;
+        }
+
+        private String searchedPathsSummary() {
+            if (searchedPaths.isEmpty()) {
+                return "(none)";
+            }
+
+            StringBuilder summary = new StringBuilder();
+            for (int index = 0; index < searchedPaths.size(); index++) {
+                if (index > 0) {
+                    summary.append("; ");
+                }
+                summary.append(searchedPaths.get(index).toAbsolutePath());
+            }
+            return summary.toString();
+        }
     }
 }

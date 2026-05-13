@@ -9,6 +9,7 @@ import com.abap.assistant.core.AssistantService;
 import com.abap.assistant.core.OpenAiResponsesClient;
 import com.abap.assistant.core.OpenAiSettings;
 import com.abap.assistant.core.SensitiveDataRedactor;
+import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -110,7 +111,7 @@ public final class ChatView extends ViewPart {
                 try {
                     AssistantService service = new AssistantService(
                         new AssistantPromptBuilder(new SensitiveDataRedactor(), new AbapContextClassifier()),
-                        new OpenAiResponsesClient(OpenAiSettings.fromEnvironment()));
+                        new OpenAiResponsesClient(OpenAiSettings.fromEnvironment(EclipseDotEnvLocator.candidateDotEnvFiles())));
                     AssistantResponse response = service.answer(request);
                     updateUi(() -> {
                         outputText.setText(response.text());

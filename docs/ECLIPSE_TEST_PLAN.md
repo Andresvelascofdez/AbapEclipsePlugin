@@ -43,6 +43,7 @@ Expected result:
 - Eclipse starts against a temporary workspace/configuration.
 - The smoke-test plugin opens `com.abap.assistant.ui.ChatView`.
 - The smoke-test plugin verifies that the returned view class is `com.abap.assistant.ui.ChatView` and that the Eclipse view site id matches `com.abap.assistant.ui.ChatView`.
+- The smoke-test plugin creates a temporary workspace project named `com.abap.assistant` with a test `.env` and verifies that `OpenAiSettings` reads `OPENAI_API_KEY` from that project location.
 - Eclipse exits automatically.
 - The workspace log contains no ABAP Assistant view creation, icon or bundle resolution errors.
 
@@ -59,6 +60,18 @@ Expected result:
 - Persisted workbench state is kept.
 - The plugin id `com.abap.assistant`, view id `com.abap.assistant.ui.ChatView`, and icon `icons/abap_icon.png` resolve correctly.
 - The smoke-test plugin opens the persisted/current `ABAP Chat` view, verifies the `ChatView` instance and exits successfully.
+
+4. Live OpenAI smoke test:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"
+```
+
+Expected result:
+
+- The script reads the local, non-committed `.env`.
+- The OpenAI client sends a request without exposing the API key.
+- The model returns a response.
 
 ## Manual Follow-Up Tests
 

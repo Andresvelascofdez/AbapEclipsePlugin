@@ -33,3 +33,11 @@ This documentation is a technical development record. It is not legal or tax adv
 - Functional decision made by owner: require an Eclipse test plan, code rework, execution of those tests, and cleanup of generated junk files.
 - Codex response: aligned bundle/view identity with the runtime workspace, added icon packaging, created Eclipse runtime smoke tests, and executed them against the local Eclipse installation.
 - Manual testing by owner: TODO/TBC after pulling the fixed version.
+
+## 2026-05-13 - API Key Configuration Report
+
+- Requirement/problem reported by owner: `.env` exists, but the Eclipse view still showed `OPENAI_API_KEY is required`.
+- Evidence provided by owner: screenshot of the ABAP Chat view showing the missing API key message after pressing `Ask`.
+- Functional decision made by owner: use `.env` in the project for testing.
+- Codex response: implemented Eclipse workspace `.env` discovery and validated it with Eclipse smoke tests plus a live OpenAI smoke test.
+- Manual testing by owner: TODO/TBC after pulling the fixed version and relaunching Eclipse.

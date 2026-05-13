@@ -30,6 +30,8 @@ notepad .env
 
 If an API key was shared in a chat, log, screenshot, commit, or ticket, revoke it and create a new key before using the project.
 
+When running inside Eclipse, the plug-in checks `.env` in the imported `com.abap.assistant` project first, then other workspace projects, then the workspace root, then Eclipse's process working directory. You can also set `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` to an explicit `.env` path.
+
 ## Validation
 
 Run the automated validation from the project root:
@@ -50,6 +52,12 @@ To reproduce the previously reported persisted-workspace issue, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState
+```
+
+Run a live OpenAI smoke test from the project root after creating a local `.env`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"
 ```
 
 ## Eclipse Import Prerequisites

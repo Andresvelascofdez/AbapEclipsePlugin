@@ -46,3 +46,16 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: the previous implementation used a new bundle/view identity that did not match the persisted runtime workspace. The runtime expected `com.abap.assistant` and `com.abap.assistant.ui.ChatView`.
 - Follow-up required: owner should pull the latest commit and reimport/clean the project or launch a fresh Eclipse Application.
 - Reviewer/validator: Codex using the local Eclipse installation at `C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse`.
+
+## 2026-05-13 - OpenAI `.env` Loading Validation
+
+- Tested feature: `.env` discovery from Eclipse workspace project and live OpenAI client configuration.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState -TimeoutSeconds 120`.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"` from the project root with a local `.env`.
+- Expected result: Eclipse smoke tests create a temporary `com.abap.assistant` workspace project, read a test `.env`, open `ChatView`, and exit successfully; live smoke test reads the local `.env` and receives a model response.
+- Actual result: all scenarios passed. The live smoke test returned a model response and did not expose the API key.
+- Status: Passed.
+- Issues found: prior implementation only checked `.env` relative to Eclipse's process working directory.
+- Follow-up required: owner should pull the latest version and relaunch/clean the Eclipse runtime.
+- Reviewer/validator: Codex using local Eclipse and the owner's local `.env`.

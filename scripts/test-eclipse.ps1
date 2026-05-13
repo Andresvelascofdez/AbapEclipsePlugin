@@ -26,6 +26,7 @@ $configuration = Join-Path $buildRoot "configuration"
 $sourcesFile = Join-Path $buildRoot "sources.txt"
 $smokeSourcesFile = Join-Path $buildRoot "smoke-sources.txt"
 $marker = Join-Path $buildRoot "marker.txt"
+$envProjectRoot = Join-Path $buildRoot "env-project"
 $productJar = Join-Path $dropins "com.abap.assistant_0.1.0.jar"
 $smokeJar = Join-Path $dropins "com.abap.assistant.smoke_0.1.0.jar"
 
@@ -37,7 +38,12 @@ if (Test-Path -LiteralPath $buildRoot) {
     Remove-Item -LiteralPath $buildRoot -Recurse -Force
 }
 
-New-Item -ItemType Directory -Force -Path $classes, $smokeClasses, $dropins, $workspace, $configuration | Out-Null
+New-Item -ItemType Directory -Force -Path $classes, $smokeClasses, $dropins, $workspace, $configuration, $envProjectRoot | Out-Null
+[System.IO.File]::WriteAllText((Join-Path $envProjectRoot ".env"), @"
+OPENAI_API_KEY=smoke-test-key
+OPENAI_MODEL=gpt-5-mini
+OPENAI_BASE_URL=https://api.openai.com/v1/responses
+"@, [System.Text.UTF8Encoding]::new($false))
 
 if (-not [string]::IsNullOrWhiteSpace($WorkspaceTemplate)) {
     $templatePath = Resolve-Path $WorkspaceTemplate
@@ -73,6 +79,7 @@ Bundle-SymbolicName: com.abap.assistant.smoke;singleton:=true
 Bundle-Version: 0.1.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
  org.eclipse.ui,
  com.abap.assistant
 Bundle-ActivationPolicy: lazy
@@ -97,6 +104,12 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.abap.assistant.core.OpenAiSettings;
+import com.abap.assistant.eclipse.EclipseDotEnvLocator;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IViewPart;
@@ -107,10 +120,27 @@ import org.eclipse.ui.PlatformUI;
 public final class SmokeStartup implements IStartup {
     @Override
     public void earlyStartup() {
+        String marker = System.getProperty("abap.assistant.smoke.marker");
+        try {
+            createSmokeProject();
+            OpenAiSettings settings = OpenAiSettings.fromEnvironment(EclipseDotEnvLocator.candidateDotEnvFiles());
+            if (!"smoke-test-key".equals(settings.apiKey())) {
+                throw new IllegalStateException("Unexpected smoke API key source.");
+            }
+        } catch (Throwable throwable) {
+            writeFailure(marker, throwable);
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    PlatformUI.getWorkbench().close();
+                }
+            });
+            return;
+        }
+
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                String marker = System.getProperty("abap.assistant.smoke.marker");
                 try {
                     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                     if (window == null && PlatformUI.getWorkbench().getWorkbenchWindows().length > 0) {
@@ -132,18 +162,36 @@ public final class SmokeStartup implements IStartup {
                     }
                     Files.writeString(Path.of(marker), "PASS");
                 } catch (Throwable throwable) {
-                    try {
-                        StringWriter writer = new StringWriter();
-                        throwable.printStackTrace(new PrintWriter(writer));
-                        Files.writeString(Path.of(marker), "FAIL" + System.lineSeparator() + writer);
-                    } catch (Exception ignored) {
-                        // Nothing useful can be done here; Eclipse log will contain the error.
-                    }
+                    writeFailure(marker, throwable);
                 } finally {
                     PlatformUI.getWorkbench().close();
                 }
             }
         });
+    }
+
+    private static void createSmokeProject() throws Exception {
+        String smokeProjectRoot = System.getProperty("abap.assistant.smoke.projectRoot");
+        if (smokeProjectRoot == null || smokeProjectRoot.isBlank()) {
+            throw new IllegalStateException("Missing abap.assistant.smoke.projectRoot system property.");
+        }
+
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("com.abap.assistant");
+        if (!project.exists()) {
+            IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription("com.abap.assistant");
+            description.setLocation(new org.eclipse.core.runtime.Path(smokeProjectRoot));
+            project.create(description, null);
+        }
+    }
+
+    private static void writeFailure(String marker, Throwable throwable) {
+        try {
+            StringWriter writer = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(writer));
+            Files.writeString(Path.of(marker), "FAIL" + System.lineSeparator() + writer);
+        } catch (Exception ignored) {
+            // Nothing useful can be done here; Eclipse log will contain the error.
+        }
     }
 }
 "@, [System.Text.UTF8Encoding]::new($false))
@@ -169,7 +217,8 @@ $arguments = @(
     "-application", "org.eclipse.ui.ide.workbench",
     "-vmargs",
     "-Dorg.eclipse.equinox.p2.reconciler.dropins.directory=$dropins",
-    "-Dabap.assistant.smoke.marker=$marker"
+    "-Dabap.assistant.smoke.marker=$marker",
+    "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
 )
 if (-not $KeepPersistedState) {
     $arguments = @(
@@ -182,7 +231,8 @@ if (-not $KeepPersistedState) {
         "-application", "org.eclipse.ui.ide.workbench",
         "-vmargs",
         "-Dorg.eclipse.equinox.p2.reconciler.dropins.directory=$dropins",
-        "-Dabap.assistant.smoke.marker=$marker"
+        "-Dabap.assistant.smoke.marker=$marker",
+        "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
     )
 }
 

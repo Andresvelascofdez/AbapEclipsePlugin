@@ -82,6 +82,8 @@ OPENAI_BASE_URL=https://api.openai.com/v1/responses
 
 Si una clave ya se pego en un chat o documento, revocala y crea una nueva antes de usarla.
 
+Dentro de Eclipse, el plugin busca `.env` primero en el proyecto importado `com.abap.assistant`. Si quieres usar otra ruta, define la variable de entorno o propiedad Java `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` con la ruta completa al archivo `.env`.
+
 ## 4. Probar La Llamada Real A OpenAI
 
 Con `.env` configurado:

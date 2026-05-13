@@ -67,3 +67,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: repository documentation must remain clear that the GitHub project is `AbapEclipsePlugin` even though the runtime bundle id is `com.abap.assistant`.
 - Relation to SAP/ABAP/Eclipse/ADT use case: Eclipse view ids are persisted by the workbench and must remain stable for reliable ADT usage.
 - Project owner decision: change made in response to owner-provided runtime screenshots and log file.
+
+## ADR-007 - Eclipse Workspace `.env` Discovery
+
+- Context: the ABAP Chat view ran inside Eclipse, but `OPENAI_API_KEY` was not found even though the project root contained a local `.env`.
+- Options considered: require users to launch Eclipse from the project folder, require an OS-level environment variable only, require `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`, or discover `.env` from the imported Eclipse project.
+- Selected option: discover `.env` from the imported `com.abap.assistant` workspace project first, then other workspace projects, workspace root and process working directory, while still supporting explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`.
+- Reason for selection: Eclipse normally runs with a working directory unrelated to the imported project, so project-based discovery matches how the owner is testing.
+- Expected benefit: simpler local setup while keeping API keys out of git.
+- Risks/limitations: if several workspace projects contain `.env`, the primary `com.abap.assistant` project is intentionally preferred.
+- Relation to SAP/ABAP/Eclipse/ADT use case: ADT users typically import projects into an Eclipse workspace and run/debug from there.
+- Project owner decision: change made in response to owner report that `.env` existed but the view still showed `OPENAI_API_KEY is required`.
