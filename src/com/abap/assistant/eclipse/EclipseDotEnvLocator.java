@@ -1,7 +1,9 @@
 package com.abap.assistant.eclipse;
 
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,7 +12,10 @@ import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 public final class EclipseDotEnvLocator {
     private static final String PRIMARY_PROJECT_NAME = "com.abap.assistant";
@@ -22,6 +27,8 @@ public final class EclipseDotEnvLocator {
         Set<Path> candidates = new LinkedHashSet<>();
         addWorkspaceProjects(candidates, true);
         addWorkspaceProjects(candidates, false);
+        addBundleLocation(candidates);
+        addCodeSource(candidates);
         addWorkspaceRoot(candidates);
         addUserDir(candidates);
         return candidates.toArray(new Path[0]);
@@ -74,6 +81,74 @@ public final class EclipseDotEnvLocator {
             }
         } catch (IllegalStateException exception) {
             // Workspace is not available yet.
+        }
+    }
+
+    private static void addBundleLocation(Set<Path> candidates) {
+        try {
+            Bundle bundle = FrameworkUtil.getBundle(EclipseDotEnvLocator.class);
+            if (bundle == null) {
+                return;
+            }
+
+            URL entry = bundle.getEntry("/");
+            if (entry != null) {
+                addDotEnvNear(candidates, Path.of(FileLocator.toFileURL(entry).toURI()));
+            }
+            addBundleLocationString(candidates, bundle.getLocation());
+        } catch (Exception exception) {
+            // Bundle location discovery is a best-effort fallback.
+        }
+    }
+
+    private static void addBundleLocationString(Set<Path> candidates, String location) {
+        if (location == null || location.isBlank()) {
+            return;
+        }
+
+        String normalized = location;
+        int atIndex = normalized.indexOf('@');
+        if (atIndex >= 0 && atIndex + 1 < normalized.length()) {
+            normalized = normalized.substring(atIndex + 1);
+        }
+        if (normalized.startsWith("reference:")) {
+            normalized = normalized.substring("reference:".length());
+        }
+
+        try {
+            if (normalized.startsWith("file:")) {
+                addDotEnvNear(candidates, Path.of(URI.create(normalized)));
+            } else {
+                addDotEnvNear(candidates, Path.of(normalized));
+            }
+        } catch (IllegalArgumentException exception) {
+            // Some Equinox locations are not file-system paths.
+        }
+    }
+
+    private static void addCodeSource(Set<Path> candidates) {
+        try {
+            CodeSource source = EclipseDotEnvLocator.class.getProtectionDomain().getCodeSource();
+            if (source != null && source.getLocation() != null) {
+                addDotEnvNear(candidates, Path.of(source.getLocation().toURI()));
+            }
+        } catch (Exception exception) {
+            // Code source discovery is a best-effort fallback.
+        }
+    }
+
+    private static void addDotEnvNear(Set<Path> candidates, Path location) {
+        if (location == null) {
+            return;
+        }
+
+        Path base = location.toAbsolutePath().normalize();
+        if (base.getFileName() != null && base.getFileName().toString().endsWith(".jar")) {
+            base = base.getParent();
+        }
+        for (int depth = 0; base != null && depth < 3; depth++) {
+            candidates.add(base.resolve(".env"));
+            base = base.getParent();
         }
     }
 

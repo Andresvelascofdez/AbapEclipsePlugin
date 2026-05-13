@@ -67,20 +67,29 @@ public final class OpenAiSettings {
             return new DotEnvSearchResult(loader.load(path), searchedPaths);
         }
 
+        Map<String, String> firstNonEmptyValues = Collections.emptyMap();
         for (Path candidate : dotenvCandidates) {
             if (candidate == null) {
                 continue;
             }
             searchedPaths.add(candidate);
             Map<String, String> values = loader.load(candidate);
-            if (!values.isEmpty()) {
+            if (!values.isEmpty() && firstNonEmptyValues.isEmpty()) {
+                firstNonEmptyValues = values;
+            }
+            String apiKey = values.get("OPENAI_API_KEY");
+            if (apiKey != null && !apiKey.isBlank()) {
                 return new DotEnvSearchResult(values, searchedPaths);
             }
         }
 
         Path defaultPath = Path.of(".env");
         searchedPaths.add(defaultPath);
-        return new DotEnvSearchResult(loader.load(defaultPath), searchedPaths);
+        Map<String, String> defaultValues = loader.load(defaultPath);
+        if (!defaultValues.isEmpty()) {
+            return new DotEnvSearchResult(defaultValues, searchedPaths);
+        }
+        return new DotEnvSearchResult(firstNonEmptyValues, searchedPaths);
     }
 
     private static String required(String value, String name) {

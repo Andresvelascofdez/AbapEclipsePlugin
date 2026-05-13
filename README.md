@@ -30,7 +30,7 @@ notepad .env
 
 If an API key was shared in a chat, log, screenshot, commit, or ticket, revoke it and create a new key before using the project.
 
-When running inside Eclipse, the plug-in checks `.env` in the imported `com.abap.assistant` project first, then other workspace projects, then the workspace root, then Eclipse's process working directory. You can also set `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` to an explicit `.env` path.
+When running inside Eclipse, the plug-in checks `.env` in the imported `com.abap.assistant` project first, then other workspace projects, then the loaded plug-in bundle/code location, then the workspace root, then Eclipse's process working directory. This covers PDE "Run As > Eclipse Application" launches where the runtime workspace is different from the development workspace. You can also set `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` to an explicit `.env` path.
 
 ## Validation
 

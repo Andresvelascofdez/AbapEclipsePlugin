@@ -82,7 +82,13 @@ OPENAI_BASE_URL=https://api.openai.com/v1/responses
 
 Si una clave ya se pego en un chat o documento, revocala y crea una nueva antes de usarla.
 
-Dentro de Eclipse, el plugin busca `.env` primero en el proyecto importado `com.abap.assistant`. Si quieres usar otra ruta, define la variable de entorno o propiedad Java `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` con la ruta completa al archivo `.env`.
+Dentro de Eclipse, el plugin busca `.env` primero en el proyecto importado `com.abap.assistant`, despues en otros proyectos del workspace, despues cerca del bundle/codigo cargado del plugin, despues en la raiz del workspace runtime y finalmente en el directorio de arranque de Eclipse. Esto cubre lanzamientos `Run As > Eclipse Application`, donde el workspace runtime puede ser `C:\Users\Admin\runtime-EclipseApplication` aunque el `.env` este en `C:\Users\Admin\SapAssistant\AbapEclipseAssistant`.
+
+Si quieres fijar la ruta exacta, define la variable de entorno o propiedad Java `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` con la ruta completa al archivo `.env`. Para una configuracion de lanzamiento PDE, puedes anadir este VM argument:
+
+```text
+-DABAP_ECLIPSE_ASSISTANT_ENV_FILE=C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env
+```
 
 ## 4. Probar La Llamada Real A OpenAI
 
@@ -145,7 +151,7 @@ Desde el Eclipse de desarrollo:
 
 ## 9. Problemas Frecuentes
 
-- `OPENAI_API_KEY is required.`: falta `.env` o la variable de entorno.
+- `OPENAI_API_KEY is required.`: revisa las rutas que aparecen en el propio mensaje. Si no aparece `C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`, actualiza el plugin, limpia el runtime workspace o usa `-DABAP_ECLIPSE_ASSISTANT_ENV_FILE=C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`.
 - `javac is not recognized`: instala Java 17+ y comprueba el `PATH`.
 - La vista no aparece: revisa que PDE haya reconocido `plugin.xml` y que el proyecto no tenga errores.
 - Error HTTP de OpenAI: revisa la clave, el modelo configurado y la conectividad.

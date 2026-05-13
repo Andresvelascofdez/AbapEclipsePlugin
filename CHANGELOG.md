@@ -11,3 +11,4 @@
 - Lowered source compatibility to Java 11 and added Eclipse PDE prerequisite diagnostics for import errors where `org.eclipse.*`, SWT, JFace or PDE classes are not resolved.
 - Renamed the runtime bundle/view to `com.abap.assistant` / `com.abap.assistant.ui.ChatView`, added the ABAP Chat icon expected by Eclipse persisted state, and added real Eclipse smoke tests.
 - Added Eclipse workspace `.env` discovery so the view can read `OPENAI_API_KEY` from the imported project location, not only from Eclipse's process working directory.
+- Added bundle/code-location `.env` discovery for PDE runtime launches where the Eclipse Application workspace does not contain the development project, and bumped the bundle to `0.1.1.qualifier`.

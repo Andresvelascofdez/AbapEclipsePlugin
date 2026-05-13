@@ -71,10 +71,10 @@ This documentation is a technical development record. It is not legal or tax adv
 ## ADR-007 - Eclipse Workspace `.env` Discovery
 
 - Context: the ABAP Chat view ran inside Eclipse, but `OPENAI_API_KEY` was not found even though the project root contained a local `.env`.
-- Options considered: require users to launch Eclipse from the project folder, require an OS-level environment variable only, require `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`, or discover `.env` from the imported Eclipse project.
-- Selected option: discover `.env` from the imported `com.abap.assistant` workspace project first, then other workspace projects, workspace root and process working directory, while still supporting explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`.
-- Reason for selection: Eclipse normally runs with a working directory unrelated to the imported project, so project-based discovery matches how the owner is testing.
+- Options considered: require users to launch Eclipse from the project folder, require an OS-level environment variable only, require `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`, discover `.env` from the imported Eclipse project, or discover `.env` near the loaded bundle/code location.
+- Selected option: discover `.env` from the imported `com.abap.assistant` workspace project first, then other workspace projects, then the loaded bundle/code location, workspace root and process working directory, while still supporting explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`.
+- Reason for selection: Eclipse normally runs with a working directory unrelated to the imported project, and PDE `Run As > Eclipse Application` uses a separate runtime workspace that may not contain the development project.
 - Expected benefit: simpler local setup while keeping API keys out of git.
-- Risks/limitations: if several workspace projects contain `.env`, the primary `com.abap.assistant` project is intentionally preferred.
+- Risks/limitations: if several locations contain `.env`, the primary `com.abap.assistant` project is intentionally preferred. Explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` remains the deterministic override.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ADT users typically import projects into an Eclipse workspace and run/debug from there.
 - Project owner decision: change made in response to owner report that `.env` existed but the view still showed `OPENAI_API_KEY is required`.

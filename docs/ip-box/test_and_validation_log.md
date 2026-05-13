@@ -49,13 +49,14 @@ This documentation is a technical development record. It is not legal or tax adv
 
 ## 2026-05-13 - OpenAI `.env` Loading Validation
 
-- Tested feature: `.env` discovery from Eclipse workspace project and live OpenAI client configuration.
+- Tested feature: `.env` discovery from Eclipse workspace project, loaded plug-in bundle/code location, and live OpenAI client configuration.
 - Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120`.
 - Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState -TimeoutSeconds 120`.
-- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"` from the project root with a local `.env`.
-- Expected result: Eclipse smoke tests create a temporary `com.abap.assistant` workspace project, read a test `.env`, open `ChatView`, and exit successfully; live smoke test reads the local `.env` and receives a model response.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv -TimeoutSeconds 120`.
+- Test scenario 4: run `powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"` from the project root with a local `.env`.
+- Expected result: Eclipse smoke tests read a test `.env` from both a temporary workspace project and the loaded bundle/code location, open `ChatView`, and exit successfully; live smoke test reads the local `.env` and receives a model response.
 - Actual result: all scenarios passed. The live smoke test returned a model response and did not expose the API key.
 - Status: Passed.
-- Issues found: prior implementation only checked `.env` relative to Eclipse's process working directory.
+- Issues found: prior implementation did not cover PDE launches where `C:\Users\Admin\runtime-EclipseApplication` does not contain the development project.
 - Follow-up required: owner should pull the latest version and relaunch/clean the Eclipse runtime.
 - Reviewer/validator: Codex using local Eclipse and the owner's local `.env`.

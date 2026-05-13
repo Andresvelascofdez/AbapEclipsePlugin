@@ -42,11 +42,11 @@ This documentation is a technical development record. It is not legal or tax adv
 ## 2026-05-13 - Eclipse `.env` Discovery Fix
 
 - Feature/module worked on: OpenAI configuration loading inside Eclipse runtime.
-- Technical objective: allow the ABAP Chat view to read `OPENAI_API_KEY` from the imported project `.env`, not only from Eclipse's process working directory.
-- Implementation summary: added `EclipseDotEnvLocator`, exported the core and Eclipse helper packages, updated `ChatView` to pass Eclipse workspace `.env` candidates to `OpenAiSettings`, and expanded the Eclipse smoke test to validate workspace project `.env` discovery.
+- Technical objective: allow the ABAP Chat view to read `OPENAI_API_KEY` from the development project `.env`, not only from Eclipse's process working directory or runtime workspace.
+- Implementation summary: added `EclipseDotEnvLocator`, exported the core and Eclipse helper packages, updated `ChatView` to pass Eclipse `.env` candidates to `OpenAiSettings`, added workspace-project and bundle/code-location discovery, and expanded the Eclipse smoke test to validate both cases.
 - Files changed: `META-INF/MANIFEST.MF`, `src/com/abap/assistant/core/OpenAiSettings.java`, `src/com/abap/assistant/eclipse/EclipseDotEnvLocator.java`, `src/com/abap/assistant/ui/ChatView.java`, `scripts/test-eclipse.ps1`, documentation and IP Box records.
-- User/business reason: the project owner reported that `.env` existed but the Eclipse view still showed `OPENAI_API_KEY is required`.
-- Validation status: local validation, clean Eclipse smoke test, persisted workspace Eclipse smoke test and live OpenAI smoke test passed on 2026-05-13.
+- User/business reason: the project owner reported that `.env` existed but the Eclipse view still showed `OPENAI_API_KEY is required`, and later provided evidence that only the runtime workspace and Eclipse installation directories were checked.
+- Validation status: local validation, clean Eclipse smoke test, persisted workspace Eclipse smoke test, bundle-location Eclipse smoke test and live OpenAI smoke test passed on 2026-05-13.
 - Open limitations: live usage still depends on a valid non-committed OpenAI API key and network access.
 - AI assistance used: yes.
 - Human decision/review notes: owner confirmed `.env` had been created and provided the Eclipse UI error screenshot.

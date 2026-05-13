@@ -2,7 +2,8 @@ param(
     [string]$EclipseHome = "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse",
     [int]$TimeoutSeconds = 90,
     [string]$WorkspaceTemplate = "",
-    [switch]$KeepPersistedState
+    [switch]$KeepPersistedState,
+    [switch]$UseBundleEnv
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,8 +28,9 @@ $sourcesFile = Join-Path $buildRoot "sources.txt"
 $smokeSourcesFile = Join-Path $buildRoot "smoke-sources.txt"
 $marker = Join-Path $buildRoot "marker.txt"
 $envProjectRoot = Join-Path $buildRoot "env-project"
-$productJar = Join-Path $dropins "com.abap.assistant_0.1.0.jar"
+$productJar = Join-Path $dropins "com.abap.assistant_0.1.1.jar"
 $smokeJar = Join-Path $dropins "com.abap.assistant.smoke_0.1.0.jar"
+$expectedApiKey = if ($UseBundleEnv) { "smoke-bundle-key" } else { "smoke-test-key" }
 
 if (Test-Path -LiteralPath $buildRoot) {
     $resolvedBuild = Resolve-Path $buildRoot
@@ -39,8 +41,9 @@ if (Test-Path -LiteralPath $buildRoot) {
 }
 
 New-Item -ItemType Directory -Force -Path $classes, $smokeClasses, $dropins, $workspace, $configuration, $envProjectRoot | Out-Null
-[System.IO.File]::WriteAllText((Join-Path $envProjectRoot ".env"), @"
-OPENAI_API_KEY=smoke-test-key
+$envFileRoot = if ($UseBundleEnv) { $dropins } else { $envProjectRoot }
+[System.IO.File]::WriteAllText((Join-Path $envFileRoot ".env"), @"
+OPENAI_API_KEY=$expectedApiKey
 OPENAI_MODEL=gpt-5-mini
 OPENAI_BASE_URL=https://api.openai.com/v1/responses
 "@, [System.Text.UTF8Encoding]::new($false))
@@ -103,7 +106,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
+import com.abap.assistant.core.DotEnvLoader;
 import com.abap.assistant.core.OpenAiSettings;
 import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 
@@ -124,8 +129,9 @@ public final class SmokeStartup implements IStartup {
         try {
             createSmokeProject();
             OpenAiSettings settings = OpenAiSettings.fromEnvironment(EclipseDotEnvLocator.candidateDotEnvFiles());
-            if (!"smoke-test-key".equals(settings.apiKey())) {
-                throw new IllegalStateException("Unexpected smoke API key source.");
+            String expectedApiKey = System.getProperty("abap.assistant.smoke.expectedApiKey");
+            if (!expectedApiKey.equals(settings.apiKey())) {
+                throw new IllegalStateException("Unexpected smoke API key source. " + describeDotEnvCandidates(expectedApiKey));
             }
         } catch (Throwable throwable) {
             writeFailure(marker, throwable);
@@ -173,7 +179,7 @@ public final class SmokeStartup implements IStartup {
     private static void createSmokeProject() throws Exception {
         String smokeProjectRoot = System.getProperty("abap.assistant.smoke.projectRoot");
         if (smokeProjectRoot == null || smokeProjectRoot.isBlank()) {
-            throw new IllegalStateException("Missing abap.assistant.smoke.projectRoot system property.");
+            return;
         }
 
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("com.abap.assistant");
@@ -192,6 +198,30 @@ public final class SmokeStartup implements IStartup {
         } catch (Exception ignored) {
             // Nothing useful can be done here; Eclipse log will contain the error.
         }
+    }
+
+    private static String describeDotEnvCandidates(String expectedApiKey) {
+        StringBuilder builder = new StringBuilder("Candidates:");
+        DotEnvLoader loader = new DotEnvLoader();
+        for (Path candidate : EclipseDotEnvLocator.candidateDotEnvFiles()) {
+            try {
+                Map<String, String> values = loader.load(candidate);
+                String value = values.get("OPENAI_API_KEY");
+                builder.append(System.lineSeparator())
+                    .append(candidate.toAbsolutePath())
+                    .append(" exists=")
+                    .append(Files.isRegularFile(candidate))
+                    .append(" hasKey=")
+                    .append(value != null && !value.isBlank())
+                    .append(" matchesExpected=")
+                    .append(expectedApiKey != null && expectedApiKey.equals(value));
+            } catch (Exception exception) {
+                builder.append(System.lineSeparator())
+                    .append(candidate.toAbsolutePath())
+                    .append(" unreadable");
+            }
+        }
+        return builder.toString();
     }
 }
 "@, [System.Text.UTF8Encoding]::new($false))
@@ -218,8 +248,11 @@ $arguments = @(
     "-vmargs",
     "-Dorg.eclipse.equinox.p2.reconciler.dropins.directory=$dropins",
     "-Dabap.assistant.smoke.marker=$marker",
-    "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
+    "-Dabap.assistant.smoke.expectedApiKey=$expectedApiKey"
 )
+if (-not $UseBundleEnv) {
+    $arguments += "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
+}
 if (-not $KeepPersistedState) {
     $arguments = @(
         "-nosplash",
@@ -232,11 +265,14 @@ if (-not $KeepPersistedState) {
         "-vmargs",
         "-Dorg.eclipse.equinox.p2.reconciler.dropins.directory=$dropins",
         "-Dabap.assistant.smoke.marker=$marker",
-        "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
+        "-Dabap.assistant.smoke.expectedApiKey=$expectedApiKey"
     )
+    if (-not $UseBundleEnv) {
+        $arguments += "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
+    }
 }
 
-$process = Start-Process -FilePath $eclipseExe -ArgumentList $arguments -PassThru -WindowStyle Hidden
+$process = Start-Process -FilePath $eclipseExe -ArgumentList $arguments -PassThru -WindowStyle Hidden -WorkingDirectory $eclipseHomePath
 $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 while ((Get-Date) -lt $deadline) {
     if (Test-Path -LiteralPath $marker) {
