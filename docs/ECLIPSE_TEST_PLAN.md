@@ -47,7 +47,20 @@ Expected result:
 - Eclipse exits automatically.
 - The workspace log contains no ABAP Assistant view creation, icon or bundle resolution errors.
 
-3. Bundle-location `.env` runtime smoke test:
+3. Eclipse project import/build smoke test:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120
+```
+
+Expected result:
+
+- A clean Eclipse workspace imports a copy of the project metadata.
+- Eclipse runs a full workspace build using `.project`, `.classpath`, `.settings/org.eclipse.jdt.core.prefs`, `MANIFEST.MF` and `build.properties`.
+- No Java, PDE or compiler-level error markers are produced.
+- This catches mixed compiler settings such as compliance `11` with target `21`.
+
+4. Bundle-location `.env` runtime smoke test:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv
@@ -60,7 +73,7 @@ Expected result:
 - `OpenAiSettings` still resolves `OPENAI_API_KEY` from a `.env` located near the loaded plug-in bundle/code location.
 - This covers PDE runtime launches where `C:\Users\Admin\runtime-EclipseApplication` is not the same workspace as the development project.
 
-4. Persisted workspace runtime test:
+5. Persisted workspace runtime test:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState
@@ -74,7 +87,7 @@ Expected result:
 - The plugin id `com.abap.assistant`, view id `com.abap.assistant.ui.ChatView`, and icon `icons/abap_icon.png` resolve correctly.
 - The smoke-test plugin opens the persisted/current `ABAP Chat` view, verifies the `ChatView` instance and exits successfully.
 
-5. Live OpenAI smoke test:
+6. Live OpenAI smoke test:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"

@@ -65,6 +65,11 @@ if ($manifest -notmatch "Bundle-RequiredExecutionEnvironment: JavaSE-11") {
     throw "Manifest must keep the JavaSE-11 execution environment for Eclipse compatibility."
 }
 
+$buildProperties = Get-Content -Path (Join-Path $root "build.properties") -Raw
+if ($buildProperties -notmatch "(?m)^javacSource\s*=\s*11\s*$" -or $buildProperties -notmatch "(?m)^javacTarget\s*=\s*11\s*$") {
+    throw "build.properties must set javacSource and javacTarget to 11 for PDE export/build compatibility."
+}
+
 $javaSources = Get-ChildItem -Path (Join-Path $root "src"), (Join-Path $root "test") -Filter "*.java" -Recurse
 foreach ($source in $javaSources) {
     $bytes = [System.IO.File]::ReadAllBytes($source.FullName)

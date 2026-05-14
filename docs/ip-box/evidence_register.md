@@ -8,6 +8,7 @@ This documentation is a technical development record. It is not legal or tax adv
 | Eclipse runtime smoke test output | Available locally | `scripts/test-eclipse.ps1` run on 2026-05-12 | Clean Eclipse runtime smoke test passed against `C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse`. |
 | Persisted workspace smoke test output | Available locally | `scripts/test-eclipse.ps1 -WorkspaceTemplate C:\Users\Admin\runtime-EclipseApplication -KeepPersistedState` run on 2026-05-12 | Smoke test passed with persisted workbench state copied from the runtime workspace. |
 | Live OpenAI smoke test output | Available locally | `scripts/smoke-openai.ps1` run on 2026-05-13 | Local `.env` was used and the model returned a response. API key was not recorded. |
+| Eclipse project import/build smoke test output | Available locally | `scripts/test-eclipse-project-build.ps1` run on 2026-05-14 | Clean Eclipse workspace imported and built the project without Java/PDE error markers. |
 | Eclipse runtime screenshot | TODO/TBC | To be captured manually by project owner | Capture `ABAP Chat` view after runtime launch using anonymised ABAP snippet only. |
 | Exported plug-in artifact | TODO/TBC | Eclipse PDE export destination | Record artifact name and Eclipse version after manual export. |
 | GitHub commit reference | Available | `Andresvelascofdez/AbapEclipsePlugin` | Initial scaffold pushed as commit `09793a4645a734b7d8e60751a199a4facf5400a6`. |

@@ -34,6 +34,12 @@ Ejecuta tambien la prueba runtime real con Eclipse:
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
 ```
 
+Ejecuta tambien la prueba de importacion/build real del proyecto en Eclipse:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
+```
+
 Si vienes de un workspace que ya tenia la vista `ABAP Chat` persistida y dio errores como `Unable to resolve plug-in "com.abap.assistant"` o `platform:/plugin/com.abap.assistant/icons/abap_icon.png`, ejecuta:
 
 ```powershell
@@ -152,7 +158,7 @@ Desde el Eclipse de desarrollo:
 ## 9. Problemas Frecuentes
 
 - `OPENAI_API_KEY is required.`: revisa las rutas que aparecen en el propio mensaje. Si no aparece `C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`, actualiza el plugin, limpia el runtime workspace o usa `-DABAP_ECLIPSE_ASSISTANT_ENV_FILE=C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`.
-- `Compliance level '11' is incompatible with target level '21'`: actualiza el proyecto y refresca `.classpath`; el contenedor JRE debe ser `JavaSE-11`, no el JRE generico del workspace. Despues ejecuta `Project > Clean`.
+- `Compliance level '11' is incompatible with target level '21'`: actualiza el proyecto y refresca `.classpath` y `build.properties`; el contenedor JRE debe ser `JavaSE-11`, y `build.properties` debe tener `javacSource = 11` y `javacTarget = 11`. Despues ejecuta `Project > Clean`.
 - `javac is not recognized`: instala Java 17+ y comprueba el `PATH`.
 - La vista no aparece: revisa que PDE haya reconocido `plugin.xml` y que el proyecto no tenga errores.
 - Error HTTP de OpenAI: revisa la clave, el modelo configurado y la conectividad.

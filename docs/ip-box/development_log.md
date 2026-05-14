@@ -55,10 +55,10 @@ This documentation is a technical development record. It is not legal or tax adv
 
 - Feature/module worked on: Eclipse project compiler and classpath configuration.
 - Technical objective: remove mixed Java settings where Eclipse reported compliance level `11` with target level `21`.
-- Implementation summary: changed `.classpath` to use the explicit `JavaSE-11` execution environment container, matching `org.eclipse.jdt.core.prefs` and `Bundle-RequiredExecutionEnvironment: JavaSE-11`.
-- Files changed: `.classpath`, `CHANGELOG.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, IP Box records.
-- User/business reason: the project owner reported the Eclipse compiler error on 2026-05-14.
-- Validation status: local validation and clean Eclipse smoke test passed on 2026-05-14.
+- Implementation summary: changed `.classpath` to use the explicit `JavaSE-11` execution environment container, added `javacSource = 11` and `javacTarget = 11` to `build.properties`, and added an Eclipse project import/build smoke test.
+- Files changed: `.classpath`, `build.properties`, `scripts/test.ps1`, `scripts/test-eclipse-project-build.ps1`, `CHANGELOG.md`, `README.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, `docs/ECLIPSE_TEST_PLAN.md`, IP Box records.
+- User/business reason: the project owner reported the Eclipse compiler error on 2026-05-14 after reimporting the project.
+- Validation status: local validation, clean Eclipse smoke test, and Eclipse project import/build smoke test passed on 2026-05-14.
 - Open limitations: if Eclipse keeps stale project metadata, the owner should refresh, clean, or reimport the project after pulling.
 - AI assistance used: yes.
 - Human decision/review notes: owner provided the exact Eclipse compiler diagnostic.

@@ -48,6 +48,12 @@ Run the Eclipse runtime smoke test against a real Eclipse/PDE installation:
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
 ```
 
+Run the Eclipse import/build smoke test to validate `.project`, `.classpath`, `.settings` and `build.properties` inside Eclipse:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
+```
+
 To reproduce the previously reported persisted-workspace issue, run:
 
 ```powershell
