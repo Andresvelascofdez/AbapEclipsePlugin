@@ -10,6 +10,8 @@ public final class AssistantCoreTest {
         redactorRemovesSensitiveValues();
         classifierSeparatesCustomAndStandardContext();
         promptBuilderAppliesProjectRules();
+        promptBuilderSupportsFreeChatAndRelatedReferences();
+        referenceExtractorFindsNestedAbapHints();
         dotenvLoaderParsesQuotedValues();
         extractorReadsResponsesOutputText();
         assistantServiceUsesRedactedPrompt();
@@ -48,6 +50,32 @@ public final class AssistantCoreTest {
         assertFalse(prompt.prompt().contains("TCK12345"), "Prompt must not contain raw tickets.");
         assertEquals(PrivacyScope.CLIENT_SPECIFIC_CUSTOM, prompt.privacyScope(), "Prompt must classify custom context.");
         assertTrue(prompt.inputWasRedacted(), "Prompt must report redaction.");
+    }
+
+    private static void promptBuilderSupportsFreeChatAndRelatedReferences() {
+        AssistantPromptBuilder builder = new AssistantPromptBuilder(new SensitiveDataRedactor(), new AbapContextClassifier());
+        AssistantPromptBuilder.BuiltPrompt prompt = builder.build(new AssistantRequest(
+            AssistantMode.FREE_CHAT,
+            "Rewrite this safely but do not apply it.",
+            "INCLUDE zrate_forms.\nCALL FUNCTION 'Z_RATE_SAVE'."));
+
+        assertTrue(prompt.prompt().contains("provide ABAP snippets or patch-style suggestions only"), "Prompt must support code suggestions without claiming changes were applied.");
+        assertTrue(prompt.prompt().contains("INCLUDE ZRATE_FORMS"), "Prompt must include detected include references.");
+        assertTrue(prompt.prompt().contains("CALL FUNCTION Z_RATE_SAVE"), "Prompt must include detected function module references.");
+    }
+
+    private static void referenceExtractorFindsNestedAbapHints() {
+        AbapReferenceExtractor extractor = new AbapReferenceExtractor();
+        java.util.List<String> references = extractor.extract(String.join(System.lineSeparator(),
+            "INCLUDE zrate_top.",
+            "PERFORM run IN PROGRAM zrate_runner.",
+            "SUBMIT zrate_report.",
+            "CALL TRANSACTION 'EA87'."));
+
+        assertTrue(references.contains("INCLUDE ZRATE_TOP"), "Include references must be detected.");
+        assertTrue(references.contains("PERFORM IN PROGRAM ZRATE_RUNNER"), "PERFORM IN PROGRAM references must be detected.");
+        assertTrue(references.contains("SUBMIT ZRATE_REPORT"), "SUBMIT references must be detected.");
+        assertTrue(references.contains("CALL TRANSACTION EA87"), "CALL TRANSACTION references must be detected.");
     }
 
     private static void dotenvLoaderParsesQuotedValues() throws Exception {

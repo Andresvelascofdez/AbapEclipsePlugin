@@ -44,6 +44,7 @@ Expected result:
 - The smoke-test plugin opens `com.abap.assistant.ui.ChatView`.
 - The smoke-test plugin verifies that the returned view class is `com.abap.assistant.ui.ChatView` and that the Eclipse view site id matches `com.abap.assistant.ui.ChatView`.
 - The smoke-test plugin creates a temporary workspace project named `com.abap.assistant` with a test `.env` and verifies that `OpenAiSettings` reads `OPENAI_API_KEY` from that project location.
+- The view opens after the free-chat UI changes and declares all required text-editor dependencies.
 - Eclipse exits automatically.
 - The workspace log contains no ABAP Assistant view creation, icon or bundle resolution errors.
 
@@ -60,7 +61,7 @@ Expected result:
 - No Java, PDE or compiler-level error markers are produced.
 - This catches mixed compiler settings such as compliance `11` with target `21`.
 
-4. Bundle-location `.env` runtime smoke test:
+4. Runtime-workspace `.env` smoke test without imported project:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv
@@ -70,8 +71,8 @@ Expected result:
 
 - Eclipse starts from the Eclipse installation directory, not the project root.
 - The smoke test does not create a `com.abap.assistant` workspace project.
-- `OpenAiSettings` still resolves `OPENAI_API_KEY` from a `.env` located near the loaded plug-in bundle/code location.
-- This covers PDE runtime launches where `C:\Users\Admin\runtime-EclipseApplication` is not the same workspace as the development project.
+- `OpenAiSettings` still resolves `OPENAI_API_KEY` from a `.env` located in the runtime workspace or configured environment path.
+- This covers Eclipse launches where no imported `com.abap.assistant` project is present in the runtime workspace.
 
 5. Persisted workspace runtime test:
 
@@ -109,4 +110,7 @@ After automated tests pass:
 - Launch `Run As > Eclipse Application`.
 - Confirm `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat` opens.
 - Test `Load Selection` with an anonymised ABAP snippet.
+- Test `Load Editor` with an opened ABAP editor.
+- Test `Load Open Editors` after opening a main program plus any includes or related objects you want to provide as context.
+- Test a free-form question that asks for ABAP code suggestions and confirm the response provides suggested snippets only.
 - Test `Ask` only after configuring a local `.env` with a valid, non-committed OpenAI API key.

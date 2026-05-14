@@ -62,3 +62,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Open limitations: if Eclipse keeps stale project metadata, the owner should refresh, clean, or reimport the project after pulling.
 - AI assistance used: yes.
 - Human decision/review notes: owner provided the exact Eclipse compiler diagnostic.
+
+## 2026-05-14 - Free-Form Editor Context Chat
+
+- Feature/module worked on: ABAP Chat Eclipse UI, prompt construction and editor context loading.
+- Technical objective: make the assistant work more like a free-form development chat that can read the active ABAP editor or open editor tabs as context.
+- Implementation summary: added separate question and context fields, `Free chat` mode, `Load Editor`, `Load Open Editors`, automatic active-editor refresh before `Ask`, ABAP related-reference extraction, text-editor bundle dependency declaration and prompt rules for code suggestions that must be confirmed or copied by the user.
+- Files changed: `ChatView.java`, `AssistantMode.java`, `AssistantPromptBuilder.java`, `AbapReferenceExtractor.java`, tests, manifest, scripts and documentation.
+- User/business reason: the project owner requested a less rigid mode-based assistant that can read opened Z programs and answer free-text questions, including suggested ABAP code.
+- Validation status: local validation, clean Eclipse runtime smoke test, Eclipse project import/build smoke test, runtime-workspace `.env` smoke test and live OpenAI smoke test passed on 2026-05-14.
+- Open limitations: the plug-in reads the active/open Eclipse editors. It does not yet fetch unopened nested ABAP includes/programs directly from the SAP repository; it detects references and can use them when opened as editor context.
+- AI assistance used: yes.
+- Human decision/review notes: owner provided a screenshot showing a loaded Z program and requested the more automatic chat workflow.

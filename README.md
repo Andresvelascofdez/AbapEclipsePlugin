@@ -7,8 +7,9 @@ The project is designed, directed, reviewed and validated by the project owner, 
 ## Current Features
 
 - Eclipse view contribution: `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
-- Assistant modes for explaining ABAP, finding possible defects, suggesting tests, proposing safe refactoring ideas, and general ABAP/ADT help.
-- Text selection loading from the active Eclipse editor.
+- Free-form ABAP chat with optional task modes for explaining ABAP, finding possible defects, suggesting tests, proposing safe refactoring ideas, and general ABAP/ADT help.
+- Text selection, full active editor, and open-editor context loading from Eclipse.
+- Related ABAP reference detection for includes, submitted programs, function modules and transactions present in the loaded context.
 - Sensitive value redaction for OpenAI-style API keys, ticket references, handover references, invoice references, email addresses, and SAP client numbers.
 - Context classification to keep SAP standard/public knowledge separate from client-specific Z/Y/private knowledge.
 - OpenAI Responses API client using `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`.
@@ -30,7 +31,7 @@ notepad .env
 
 If an API key was shared in a chat, log, screenshot, commit, or ticket, revoke it and create a new key before using the project.
 
-When running inside Eclipse, the plug-in checks `.env` in the imported `com.abap.assistant` project first, then other workspace projects, then the loaded plug-in bundle/code location, then the workspace root, then Eclipse's process working directory. This covers PDE "Run As > Eclipse Application" launches where the runtime workspace is different from the development workspace. You can also set `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` to an explicit `.env` path.
+When running inside Eclipse, the plug-in checks `.env` in the imported `com.abap.assistant` project first, then other workspace projects, then an optional `ABAP_ECLIPSE_ASSISTANT_ENV_DIR`, then the loaded plug-in bundle/code location, then the workspace root, then Eclipse's process working directory. This covers PDE "Run As > Eclipse Application" launches where the runtime workspace is different from the development workspace. You can also set `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` to an explicit `.env` path.
 
 ## Validation
 

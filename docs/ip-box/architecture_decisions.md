@@ -71,10 +71,21 @@ This documentation is a technical development record. It is not legal or tax adv
 ## ADR-007 - Eclipse Workspace `.env` Discovery
 
 - Context: the ABAP Chat view ran inside Eclipse, but `OPENAI_API_KEY` was not found even though the project root contained a local `.env`.
-- Options considered: require users to launch Eclipse from the project folder, require an OS-level environment variable only, require `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`, discover `.env` from the imported Eclipse project, or discover `.env` near the loaded bundle/code location.
-- Selected option: discover `.env` from the imported `com.abap.assistant` workspace project first, then other workspace projects, then the loaded bundle/code location, workspace root and process working directory, while still supporting explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`.
+- Options considered: require users to launch Eclipse from the project folder, require an OS-level environment variable only, require `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`, discover `.env` from the imported Eclipse project, discover `.env` from a configured directory, or discover `.env` near the loaded bundle/code location.
+- Selected option: discover `.env` from the imported `com.abap.assistant` workspace project first, then other workspace projects, then optional `ABAP_ECLIPSE_ASSISTANT_ENV_DIR`, the loaded bundle/code location, workspace root and process working directory, while still supporting explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`.
 - Reason for selection: Eclipse normally runs with a working directory unrelated to the imported project, and PDE `Run As > Eclipse Application` uses a separate runtime workspace that may not contain the development project.
 - Expected benefit: simpler local setup while keeping API keys out of git.
 - Risks/limitations: if several locations contain `.env`, the primary `com.abap.assistant` project is intentionally preferred. Explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` remains the deterministic override.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ADT users typically import projects into an Eclipse workspace and run/debug from there.
 - Project owner decision: change made in response to owner report that `.env` existed but the view still showed `OPENAI_API_KEY is required`.
+
+## ADR-008 - Free-Form Chat With Editor Context Instead Of Direct SAP Writes
+
+- Context: the owner requested a more automatic, natural chat workflow that can read opened ABAP code and propose code changes.
+- Options considered: keep mode-only analysis, add free-form chat over copied text, read active/open Eclipse editors, or attempt direct SAP repository edits.
+- Selected option: support free-form questions with active/open editor context loading and provide code suggestions only, leaving all SAP changes for explicit user confirmation/copying.
+- Reason for selection: this improves usability while avoiding unapproved writes to SAP systems and keeping sensitive/custom code boundaries visible.
+- Expected benefit: developers can ask natural questions against the current ABAP editor and receive suggested snippets with less manual copy/paste.
+- Risks/limitations: unopened nested includes/programs are not automatically fetched from SAP. The plug-in detects references and can use them when the user opens the related objects as editor context.
+- Relation to SAP/ABAP/Eclipse/ADT use case: ADT developers commonly work across a main report and includes or related objects in open editor tabs.
+- Project owner decision: change made in response to owner feedback after testing with an opened Z report.

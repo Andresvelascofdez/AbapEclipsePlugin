@@ -28,7 +28,7 @@ $sourcesFile = Join-Path $buildRoot "sources.txt"
 $smokeSourcesFile = Join-Path $buildRoot "smoke-sources.txt"
 $marker = Join-Path $buildRoot "marker.txt"
 $envProjectRoot = Join-Path $buildRoot "env-project"
-$productJar = Join-Path $dropins "com.abap.assistant_0.1.1.jar"
+$productJar = Join-Path $dropins "com.abap.assistant_0.1.2.jar"
 $smokeJar = Join-Path $dropins "com.abap.assistant.smoke_0.1.0.jar"
 $expectedApiKey = if ($UseBundleEnv) { "smoke-bundle-key" } else { "smoke-test-key" }
 
@@ -41,7 +41,7 @@ if (Test-Path -LiteralPath $buildRoot) {
 }
 
 New-Item -ItemType Directory -Force -Path $classes, $smokeClasses, $dropins, $workspace, $configuration, $envProjectRoot | Out-Null
-$envFileRoot = if ($UseBundleEnv) { $dropins } else { $envProjectRoot }
+$envFileRoot = if ($UseBundleEnv) { $workspace } else { $envProjectRoot }
 [System.IO.File]::WriteAllText((Join-Path $envFileRoot ".env"), @"
 OPENAI_API_KEY=$expectedApiKey
 OPENAI_MODEL=gpt-5-mini
@@ -250,6 +250,9 @@ $arguments = @(
     "-Dabap.assistant.smoke.marker=$marker",
     "-Dabap.assistant.smoke.expectedApiKey=$expectedApiKey"
 )
+if ($UseBundleEnv) {
+    $arguments += "-DABAP_ECLIPSE_ASSISTANT_ENV_DIR=$dropins"
+}
 if (-not $UseBundleEnv) {
     $arguments += "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
 }
@@ -267,12 +270,26 @@ if (-not $KeepPersistedState) {
         "-Dabap.assistant.smoke.marker=$marker",
         "-Dabap.assistant.smoke.expectedApiKey=$expectedApiKey"
     )
+    if ($UseBundleEnv) {
+        $arguments += "-DABAP_ECLIPSE_ASSISTANT_ENV_DIR=$dropins"
+    }
     if (-not $UseBundleEnv) {
         $arguments += "-Dabap.assistant.smoke.projectRoot=$envProjectRoot"
     }
 }
 
+$previousEnvDir = $env:ABAP_ECLIPSE_ASSISTANT_ENV_DIR
+if ($UseBundleEnv) {
+    $env:ABAP_ECLIPSE_ASSISTANT_ENV_DIR = $dropins
+}
 $process = Start-Process -FilePath $eclipseExe -ArgumentList $arguments -PassThru -WindowStyle Hidden -WorkingDirectory $eclipseHomePath
+if ($UseBundleEnv) {
+    if ($null -eq $previousEnvDir) {
+        Remove-Item Env:\ABAP_ECLIPSE_ASSISTANT_ENV_DIR -ErrorAction SilentlyContinue
+    } else {
+        $env:ABAP_ECLIPSE_ASSISTANT_ENV_DIR = $previousEnvDir
+    }
+}
 $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 while ((Get-Date) -lt $deadline) {
     if (Test-Path -LiteralPath $marker) {

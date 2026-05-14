@@ -27,8 +27,10 @@ public final class EclipseDotEnvLocator {
         Set<Path> candidates = new LinkedHashSet<>();
         addWorkspaceProjects(candidates, true);
         addWorkspaceProjects(candidates, false);
+        addConfiguredEnvDirectory(candidates);
         addBundleLocation(candidates);
         addCodeSource(candidates);
+        addDropinsDirectory(candidates);
         addWorkspaceRoot(candidates);
         addUserDir(candidates);
         return candidates.toArray(new Path[0]);
@@ -137,6 +139,32 @@ public final class EclipseDotEnvLocator {
         }
     }
 
+    private static void addConfiguredEnvDirectory(Set<Path> candidates) {
+        String directory = firstPresent(System.getProperty("ABAP_ECLIPSE_ASSISTANT_ENV_DIR"), System.getenv("ABAP_ECLIPSE_ASSISTANT_ENV_DIR"));
+        if (directory == null) {
+            return;
+        }
+
+        try {
+            candidates.add(Path.of(directory, ".env"));
+        } catch (IllegalArgumentException exception) {
+            // Ignore invalid directory override values.
+        }
+    }
+
+    private static void addDropinsDirectory(Set<Path> candidates) {
+        String dropins = System.getProperty("org.eclipse.equinox.p2.reconciler.dropins.directory");
+        if (dropins == null || dropins.isBlank()) {
+            return;
+        }
+
+        try {
+            candidates.add(Path.of(dropins, ".env"));
+        } catch (IllegalArgumentException exception) {
+            // Ignore invalid dropins directory values.
+        }
+    }
+
     private static void addDotEnvNear(Set<Path> candidates, Path location) {
         if (location == null) {
             return;
@@ -157,5 +185,14 @@ public final class EclipseDotEnvLocator {
         if (userDir != null && !userDir.isBlank()) {
             candidates.add(Path.of(userDir, ".env"));
         }
+    }
+
+    private static String firstPresent(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.strip();
+            }
+        }
+        return null;
     }
 }

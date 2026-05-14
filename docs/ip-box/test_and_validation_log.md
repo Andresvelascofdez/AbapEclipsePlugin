@@ -73,3 +73,18 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: the generic JRE container and PDE build/export settings could inherit a Java 21 target from the workspace while project compliance remained Java 11.
 - Follow-up required: owner should refresh `.classpath` in Eclipse and run `Project > Clean`.
 - Reviewer/validator: Codex using local Eclipse.
+
+## 2026-05-14 - Free-Form Editor Context Chat Validation
+
+- Tested feature: free chat prompt mode, related ABAP reference extraction, active/open editor UI build dependencies and OpenAI request path.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120`.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120`.
+- Test scenario 4: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv -TimeoutSeconds 120`.
+- Test scenario 5: run `powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"`.
+- Expected result: core tests cover free-chat prompt rules and related-reference extraction; Eclipse imports/builds the project with text-editor dependencies; runtime opens the ABAP Chat view; live OpenAI call succeeds.
+- Actual result: all scenarios passed.
+- Status: Passed.
+- Issues found: the Eclipse project build smoke test caught a missing `org.eclipse.ui.workbench.texteditor` bundle dependency before final validation; the dependency was added to `MANIFEST.MF`.
+- Follow-up required: owner should install the updated bundle and manually test `Load Editor` / `Load Open Editors` with anonymised or non-confidential ABAP context.
+- Reviewer/validator: Codex using local Eclipse and local non-committed `.env`.

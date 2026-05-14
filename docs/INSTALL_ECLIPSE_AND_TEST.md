@@ -88,7 +88,7 @@ OPENAI_BASE_URL=https://api.openai.com/v1/responses
 
 Si una clave ya se pego en un chat o documento, revocala y crea una nueva antes de usarla.
 
-Dentro de Eclipse, el plugin busca `.env` primero en el proyecto importado `com.abap.assistant`, despues en otros proyectos del workspace, despues cerca del bundle/codigo cargado del plugin, despues en la raiz del workspace runtime y finalmente en el directorio de arranque de Eclipse. Esto cubre lanzamientos `Run As > Eclipse Application`, donde el workspace runtime puede ser `C:\Users\Admin\runtime-EclipseApplication` aunque el `.env` este en `C:\Users\Admin\SapAssistant\AbapEclipseAssistant`.
+Dentro de Eclipse, el plugin busca `.env` primero en el proyecto importado `com.abap.assistant`, despues en otros proyectos del workspace, despues en `ABAP_ECLIPSE_ASSISTANT_ENV_DIR` si lo defines, despues cerca del bundle/codigo cargado del plugin, despues en la raiz del workspace runtime y finalmente en el directorio de arranque de Eclipse. Esto cubre lanzamientos `Run As > Eclipse Application`, donde el workspace runtime puede ser `C:\Users\Admin\runtime-EclipseApplication` aunque el `.env` este en `C:\Users\Admin\SapAssistant\AbapEclipseAssistant`.
 
 Si quieres fijar la ruta exacta, define la variable de entorno o propiedad Java `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` con la ruta completa al archivo `.env`. Para una configuracion de lanzamiento PDE, puedes anadir este VM argument:
 
@@ -131,9 +131,10 @@ Window > Show View > Other > ABAP Chat Assistant > ABAP Chat
 ```
 
 4. Abre un editor ABAP o pega texto ABAP en la vista.
-5. Usa `Load Selection` si tienes texto seleccionado en el editor.
-6. Elige un modo y pulsa `Ask`.
-7. Verifica que la respuesta aparece en el panel inferior y que el estado termina en `Done`.
+5. Usa `Load Selection`, `Load Editor` o `Load Open Editors` para cargar contexto.
+6. Escribe una pregunta libre en `Question`, o deja solo el contexto si quieres un analisis general.
+7. Mantén `Use active editor` marcado si quieres que `Ask` refresque automaticamente el editor activo antes de llamar a OpenAI.
+8. Verifica que la respuesta aparece en el panel inferior y que el estado termina en `Done`.
 
 ## 7. Exportar E Instalar En Eclipse
 
@@ -152,6 +153,8 @@ Desde el Eclipse de desarrollo:
 - Ejecutar `scripts/test.ps1` antes de cada commit relevante.
 - Ejecutar `scripts/smoke-openai.ps1` despues de configurar una API key nueva.
 - Probar `Load Selection` con un snippet ABAP publico o anonimizado.
+- Probar `Load Editor` con un programa Z de prueba.
+- Probar `Load Open Editors` abriendo tambien includes u objetos relacionados que quieras dar como contexto.
 - Probar cada modo de asistente con ejemplos sin datos reales de cliente.
 - Confirmar que referencias tipo `TCK12345`, `HND12345`, emails y clientes numericos se anonimicen antes de enviarse.
 

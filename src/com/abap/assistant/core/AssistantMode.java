@@ -1,6 +1,7 @@
 package com.abap.assistant.core;
 
 public enum AssistantMode {
+    FREE_CHAT("Free chat with editor context"),
     EXPLAIN_SELECTION("Explain selected ABAP code"),
     FIND_DEFECT("Find possible defects"),
     SUGGEST_TESTS("Suggest ABAP Unit or manual tests"),
@@ -17,4 +18,3 @@ public enum AssistantMode {
         return label;
     }
 }
-

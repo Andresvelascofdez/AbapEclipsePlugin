@@ -3,10 +3,12 @@ package com.abap.assistant.core;
 public final class AssistantPromptBuilder {
     private final SensitiveDataRedactor redactor;
     private final AbapContextClassifier classifier;
+    private final AbapReferenceExtractor referenceExtractor;
 
     public AssistantPromptBuilder(SensitiveDataRedactor redactor, AbapContextClassifier classifier) {
         this.redactor = redactor;
         this.classifier = classifier;
+        this.referenceExtractor = new AbapReferenceExtractor();
     }
 
     public BuiltPrompt build(AssistantRequest request) {
@@ -15,6 +17,7 @@ public final class AssistantPromptBuilder {
         String redactedCode = redactor.redact(request.selectedCode());
         PrivacyScope privacyScope = classifier.classify(original);
         boolean redacted = !original.equals(redactor.redact(original));
+        String detectedReferences = formatReferences(referenceExtractor.extract(redactedCode));
 
         String template = String.join(System.lineSeparator(),
             "You are ABAP Chat Assistant, helping with SAP ABAP and Eclipse ADT work.",
@@ -26,6 +29,9 @@ public final class AssistantPromptBuilder {
             "- Use anonymised placeholders such as CLIENT_A, CLIENT_B, TCKXXXXX and HNDXXXXX.",
             "- If a conclusion is uncertain, include a TODO/TBC note instead of making unsupported claims.",
             "- Prefer safe, incremental ABAP or ADT guidance that preserves existing behaviour.",
+            "- The user can ask in free text. Answer naturally, but stay precise and technical.",
+            "- If the user asks for code, provide ABAP snippets or patch-style suggestions only; do not claim that code was applied in SAP.",
+            "- If related includes, submitted programs, function modules or transactions are referenced but their source is not provided, list them as additional context needed.",
             "",
             "Requested mode: %s",
             "Privacy scope detected before redaction: %s",
@@ -33,21 +39,37 @@ public final class AssistantPromptBuilder {
             "User question:",
             "%s",
             "",
-            "Selected ABAP or Eclipse context:",
+            "ABAP or Eclipse editor context:",
+            "%s",
+            "",
+            "Detected related ABAP references in provided context:",
             "%s",
             "",
             "Return:",
-            "1. Short answer.",
-            "2. Technical analysis.",
-            "3. Safe next steps or checks.",
-            "4. TODO/TBC items when evidence is missing.");
+            "- For quick free-chat answers, use concise natural language.",
+            "- For analysis or code review, lead with the practical answer, then risks and suggested ABAP code if useful.",
+            "- Put proposed code in fenced ABAP blocks.",
+            "- Include TODO/TBC only when evidence is missing.");
         String prompt = String.format(template,
             request.mode().label(),
             privacyScope,
             blankFallback(redactedQuestion),
-            blankFallback(redactedCode));
+            blankFallback(redactedCode),
+            blankFallback(detectedReferences));
 
         return new BuiltPrompt(prompt.strip(), privacyScope, redacted);
+    }
+
+    private static String formatReferences(java.util.List<String> references) {
+        if (references == null || references.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (String reference : references) {
+            builder.append("- ").append(reference).append(System.lineSeparator());
+        }
+        return builder.toString().strip();
     }
 
     private static String blankFallback(String value) {
