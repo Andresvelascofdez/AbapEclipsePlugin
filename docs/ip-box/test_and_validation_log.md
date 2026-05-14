@@ -60,3 +60,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: prior implementation did not cover PDE launches where `C:\Users\Admin\runtime-EclipseApplication` does not contain the development project.
 - Follow-up required: owner should pull the latest version and relaunch/clean the Eclipse runtime.
 - Reviewer/validator: Codex using local Eclipse and the owner's local `.env`.
+
+## 2026-05-14 - Eclipse JavaSE-11 Classpath Validation
+
+- Tested feature: Eclipse project classpath and Java compiler compatibility.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120`.
+- Expected result: project compiles with Java 11 settings and the Eclipse runtime opens `com.abap.assistant.ui.ChatView`.
+- Actual result: both commands passed.
+- Status: Passed.
+- Issues found: the generic JRE container could inherit a Java 21 target from the workspace while project compliance remained Java 11.
+- Follow-up required: owner should refresh `.classpath` in Eclipse and run `Project > Clean`.
+- Reviewer/validator: Codex using local Eclipse.

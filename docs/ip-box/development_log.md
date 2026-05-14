@@ -50,3 +50,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Open limitations: live usage still depends on a valid non-committed OpenAI API key and network access.
 - AI assistance used: yes.
 - Human decision/review notes: owner confirmed `.env` had been created and provided the Eclipse UI error screenshot.
+
+## 2026-05-14 - Eclipse Java Execution Environment Alignment
+
+- Feature/module worked on: Eclipse project compiler and classpath configuration.
+- Technical objective: remove mixed Java settings where Eclipse reported compliance level `11` with target level `21`.
+- Implementation summary: changed `.classpath` to use the explicit `JavaSE-11` execution environment container, matching `org.eclipse.jdt.core.prefs` and `Bundle-RequiredExecutionEnvironment: JavaSE-11`.
+- Files changed: `.classpath`, `CHANGELOG.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, IP Box records.
+- User/business reason: the project owner reported the Eclipse compiler error on 2026-05-14.
+- Validation status: local validation and clean Eclipse smoke test passed on 2026-05-14.
+- Open limitations: if Eclipse keeps stale project metadata, the owner should refresh, clean, or reimport the project after pulling.
+- AI assistance used: yes.
+- Human decision/review notes: owner provided the exact Eclipse compiler diagnostic.

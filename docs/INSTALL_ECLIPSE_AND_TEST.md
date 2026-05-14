@@ -152,6 +152,7 @@ Desde el Eclipse de desarrollo:
 ## 9. Problemas Frecuentes
 
 - `OPENAI_API_KEY is required.`: revisa las rutas que aparecen en el propio mensaje. Si no aparece `C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`, actualiza el plugin, limpia el runtime workspace o usa `-DABAP_ECLIPSE_ASSISTANT_ENV_FILE=C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`.
+- `Compliance level '11' is incompatible with target level '21'`: actualiza el proyecto y refresca `.classpath`; el contenedor JRE debe ser `JavaSE-11`, no el JRE generico del workspace. Despues ejecuta `Project > Clean`.
 - `javac is not recognized`: instala Java 17+ y comprueba el `PATH`.
 - La vista no aparece: revisa que PDE haya reconocido `plugin.xml` y que el proyecto no tenga errores.
 - Error HTTP de OpenAI: revisa la clave, el modelo configurado y la conectividad.
