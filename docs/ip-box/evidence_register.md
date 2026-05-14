@@ -10,6 +10,7 @@ This documentation is a technical development record. It is not legal or tax adv
 | Live OpenAI smoke test output | Available locally | `scripts/smoke-openai.ps1` run on 2026-05-13 | Local `.env` was used and the model returned a response. API key was not recorded. |
 | Eclipse project import/build smoke test output | Available locally | `scripts/test-eclipse-project-build.ps1` run on 2026-05-14 | Clean Eclipse workspace imported and built the project without Java/PDE error markers. |
 | Free-form editor context validation output | Available locally | `scripts/test.ps1`, `scripts/test-eclipse.ps1`, `scripts/test-eclipse-project-build.ps1`, `scripts/smoke-openai.ps1` run on 2026-05-14 | Tests passed after adding free-chat UI, active/open editor context loading and related-reference extraction. |
+| Question clearing and documentation refresh validation | Available locally | 2026-05-14 validation commands | Local validation, Eclipse runtime smoke test, Eclipse import/build smoke test, runtime `.env` smoke test and live OpenAI smoke test passed. Owner manual UI confirmation remains TODO/TBC. |
 | Eclipse runtime screenshot | TODO/TBC | To be captured manually by project owner | Capture `ABAP Chat` view after runtime launch using anonymised ABAP snippet only. |
 | Exported plug-in artifact | TODO/TBC | Eclipse PDE export destination | Record artifact name and Eclipse version after manual export. |
 | GitHub commit reference | Available | `Andresvelascofdez/AbapEclipsePlugin` | Initial scaffold pushed as commit `09793a4645a734b7d8e60751a199a4facf5400a6`. |

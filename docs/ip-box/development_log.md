@@ -74,3 +74,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Open limitations: the plug-in reads open Eclipse editors, including tabs in the background. It does not yet fetch unopened nested ABAP includes/programs directly from the SAP repository; it detects references and can use them when opened as editor tabs.
 - AI assistance used: yes.
 - Human decision/review notes: owner provided a screenshot showing a loaded Z program and requested the more automatic chat workflow.
+
+## 2026-05-14 - Question Clearing And Documentation Refresh
+
+- Feature/module worked on: ABAP Chat Eclipse UI and project documentation.
+- Technical objective: clear the question input after each accepted request and align all user-facing and IP Box documentation with the current automatic open-editor context workflow.
+- Implementation summary: updated `ChatView` so the `Question` box is cleared immediately after a valid ask request is queued, bumped the bundle version, rewrote the README, installation guide and Eclipse test plan around the current free-form workflow, and refreshed IP Box records.
+- Files changed: `ChatView.java`, `META-INF/MANIFEST.MF`, `scripts/test-eclipse.ps1`, `README.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, `docs/ECLIPSE_TEST_PLAN.md`, `CHANGELOG.md`, IP Box records.
+- User/business reason: the project owner reported that the question text remained after asking and requested a full documentation refresh plus next-improvement suggestions.
+- Validation status: local validation, clean Eclipse smoke test, Eclipse project import/build smoke test, runtime `.env` smoke test and live OpenAI smoke test passed on 2026-05-14.
+- Open limitations: question clearing is exercised through the Eclipse UI; automated smoke tests validate view creation and build compatibility but do not yet click the UI button.
+- AI assistance used: yes.
+- Human decision/review notes: owner accepted the automatic open-editor context direction as reasonably working and requested UX polish.

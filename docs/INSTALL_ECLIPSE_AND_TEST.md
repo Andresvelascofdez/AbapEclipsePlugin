@@ -5,80 +5,38 @@ Esta guia explica como instalar y probar ABAP Chat Assistant sin mezclarlo con `
 ## 1. Requisitos
 
 - Java 11 o superior.
-- Eclipse IDE con Plug-in Development Environment (PDE). Un Eclipse solo para ABAP/ADT puede no traer PDE instalado.
-- SAP ABAP Development Tools si se quiere probar con editores ABAP reales.
+- Eclipse IDE con Plug-in Development Environment (PDE).
+- SAP ABAP Development Tools (ADT) si se va a probar con objetos ABAP reales.
 - Acceso al repositorio `https://github.com/Andresvelascofdez/AbapEclipsePlugin`.
-- Una API key de OpenAI nueva y no expuesta en chats, logs, commits ni capturas.
+- Una API key de OpenAI guardada solo en `.env` local.
 
-No hace falta cerrar nada para que Codex cree o modifique los archivos del proyecto. Antes de importar o exportar el plugin, cierra cualquier Eclipse que tenga este mismo proyecto abierto si ves bloqueos de workspace o de compilacion.
+No guardes claves, usuarios SAP, tickets reales, facturas ni datos de cliente en git, capturas o prompts. Usa ejemplos anonimizados.
 
-## 2. Preparar El Proyecto
+## 2. Obtener El Proyecto
 
-Desde PowerShell:
+```powershell
+cd C:\Users\Admin\SapAssistant
+git clone https://github.com/Andresvelascofdez/AbapEclipsePlugin.git AbapEclipseAssistant
+cd C:\Users\Admin\SapAssistant\AbapEclipseAssistant
+```
+
+Si ya existe:
 
 ```powershell
 cd C:\Users\Admin\SapAssistant\AbapEclipseAssistant
-powershell -ExecutionPolicy Bypass -File scripts/test.ps1
+git pull
 ```
-
-El test debe terminar con:
-
-```text
-All core tests passed.
-Validation completed successfully.
-```
-
-Ejecuta tambien la prueba runtime real con Eclipse:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
-```
-
-Ejecuta tambien la prueba de importacion/build real del proyecto en Eclipse:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
-```
-
-Si vienes de un workspace que ya tenia la vista `ABAP Chat` persistida y dio errores como `Unable to resolve plug-in "com.abap.assistant"` o `platform:/plugin/com.abap.assistant/icons/abap_icon.png`, ejecuta:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState
-```
-
-## 2.1. Si Eclipse Muestra `org.eclipse Cannot Be Resolved`
-
-Los errores de la captura, por ejemplo `Button cannot be resolved to a type`, `SWT cannot be resolved to a variable` o `The import org.eclipse cannot be resolved`, indican que Eclipse no ha cargado las dependencias de plug-in. No es un error del codigo Java de `ChatView`; falta PDE o no esta activa la Target Platform.
-
-Comprueba tu instalacion:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/check-eclipse-prereqs.ps1 -EclipseHome "C:\ruta\a\eclipse"
-```
-
-Para corregirlo en Eclipse:
-
-1. Instala PDE desde `Help > Install New Software`.
-2. Busca e instala `Eclipse Plug-in Development Environment`.
-3. Reinicia Eclipse.
-4. Abre `Window > Preferences > Plug-in Development > Target Platform`.
-5. Activa `Running Platform`.
-6. Aplica cambios.
-7. Si habias importado el proyecto antes de instalar PDE, borralo del workspace sin borrar del disco y vuelve a importarlo.
-8. Ejecuta `Project > Clean`.
-
-Cuando este bien, el proyecto debe mostrar `Plug-in Dependencies` en el build path y desapareceran los errores de SWT/JFace/PDE.
 
 ## 3. Configurar OpenAI
 
-No guardes claves reales en git. Crea un `.env` local desde la plantilla:
+Crea `.env` desde la plantilla:
 
 ```powershell
 Copy-Item .env.example .env
 notepad .env
 ```
 
-Rellena:
+Contenido esperado:
 
 ```text
 OPENAI_API_KEY=replace-with-your-new-openai-api-key
@@ -86,27 +44,62 @@ OPENAI_MODEL=gpt-5-mini
 OPENAI_BASE_URL=https://api.openai.com/v1/responses
 ```
 
-Si una clave ya se pego en un chat o documento, revocala y crea una nueva antes de usarla.
+Dentro de Eclipse, el plug-in busca `.env` en este orden:
 
-Dentro de Eclipse, el plugin busca `.env` primero en el proyecto importado `com.abap.assistant`, despues en otros proyectos del workspace, despues en `ABAP_ECLIPSE_ASSISTANT_ENV_DIR` si lo defines, despues cerca del bundle/codigo cargado del plugin, despues en la raiz del workspace runtime y finalmente en el directorio de arranque de Eclipse. Esto cubre lanzamientos `Run As > Eclipse Application`, donde el workspace runtime puede ser `C:\Users\Admin\runtime-EclipseApplication` aunque el `.env` este en `C:\Users\Admin\SapAssistant\AbapEclipseAssistant`.
+- `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`, si se define con la ruta completa al fichero.
+- Proyecto importado `com.abap.assistant`.
+- Otros proyectos del workspace.
+- `ABAP_ECLIPSE_ASSISTANT_ENV_DIR`, si se define con una carpeta.
+- Ubicacion del bundle/codigo cargado.
+- Raiz del workspace.
+- Directorio de arranque de Eclipse.
 
-Si quieres fijar la ruta exacta, define la variable de entorno o propiedad Java `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` con la ruta completa al archivo `.env`. Para una configuracion de lanzamiento PDE, puedes anadir este VM argument:
+Para fijar una ruta exacta en una configuracion PDE, usa este VM argument:
 
 ```text
 -DABAP_ECLIPSE_ASSISTANT_ENV_FILE=C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env
 ```
 
-## 4. Probar La Llamada Real A OpenAI
-
-Con `.env` configurado:
+## 4. Validar Sin Eclipse
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Explain SELECT SINGLE in SAP ABAP using public SAP standard knowledge only."
+powershell -ExecutionPolicy Bypass -File scripts/test.ps1
 ```
 
-La salida debe mostrar el `Privacy scope` y una respuesta del modelo. Esta prueba usa el mismo cliente OpenAI que el plugin, pero no requiere arrancar Eclipse.
+Resultado esperado:
 
-## 5. Importar En Eclipse
+```text
+All core tests passed.
+Validation completed successfully.
+```
+
+## 5. Validar Con Eclipse Real
+
+Prueba runtime:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120
+```
+
+Prueba de importacion/build del proyecto:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 120
+```
+
+Prueba con `.env` de runtime:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv -TimeoutSeconds 120
+```
+
+Prueba viva contra OpenAI:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"
+```
+
+## 6. Importar En Eclipse
 
 1. Abre Eclipse.
 2. Ve a `File > Import`.
@@ -117,50 +110,92 @@ La salida debe mostrar el `Privacy scope` y una respuesta del modelo. Esta prueb
 C:\Users\Admin\SapAssistant\AbapEclipseAssistant
 ```
 
-5. Importa el proyecto `com.abap.assistant`.
-6. Comprueba que Eclipse no muestra errores de PDE o JDT.
+5. Importa `com.abap.assistant`.
+6. Confirma que `Plug-in Dependencies` aparece en el build path.
+7. Ejecuta `Project > Clean`.
 
-## 6. Ejecutar En Un Eclipse De Prueba
+Si aparecen errores `org.eclipse cannot be resolved`, `SWT cannot be resolved`, `Button cannot be resolved` o similares, instala PDE y activa `Window > Preferences > Plug-in Development > Target Platform > Running Platform`.
 
-1. En Eclipse, haz clic derecho sobre el proyecto.
-2. Selecciona `Run As > Eclipse Application`.
-3. En el Eclipse runtime, abre:
+## 7. Ejecutar En Eclipse
+
+Desde el Eclipse de desarrollo:
+
+1. Click derecho en el proyecto.
+2. `Run As > Eclipse Application`.
+3. En el Eclipse runtime abre:
 
 ```text
 Window > Show View > Other > ABAP Chat Assistant > ABAP Chat
 ```
 
-4. Abre uno o varios editores ABAP.
-5. Escribe una pregunta libre en `Question`.
-6. Pulsa `Ask`.
-7. El plugin leera automaticamente todos los editores de texto abiertos, incluida la pestana visible y las pestanas abiertas en segundo plano.
-8. Verifica que la respuesta aparece en el panel inferior y que el estado termina en `Done`.
+Si instalas el jar en un Eclipse normal, exporta el plug-in desde PDE y copia el jar a `dropins`; despues reinicia Eclipse con `-clean` si ves una version antigua.
 
-## 7. Exportar E Instalar En Eclipse
+## 8. Uso Actual Del Plug-in
 
-Desde el Eclipse de desarrollo:
+La vista actual tiene:
 
-1. Ve a `File > Export`.
-2. Selecciona `Plug-in Development > Deployable plug-ins and fragments`.
-3. Selecciona `com.abap.assistant`.
-4. Elige una carpeta de destino.
-5. Copia el `.jar` generado a la carpeta `dropins` de tu instalacion Eclipse.
-6. Reinicia Eclipse.
-7. Abre la vista `ABAP Chat` desde `Window > Show View > Other`.
+- selector de modo
+- boton `Ask`
+- caja `Question`
+- panel de respuesta
+- estado inferior
 
-## 8. Pruebas Recomendadas
+No hay botones de carga manual ni caja visible de contexto.
 
-- Ejecutar `scripts/test.ps1` antes de cada commit relevante.
-- Ejecutar `scripts/smoke-openai.ps1` despues de configurar una API key nueva.
-- Probar `Ask` con un programa Z de prueba abierto.
-- Probar `Ask` con un programa principal y varios includes abiertos en pestanas distintas.
-- Probar cada modo de asistente con ejemplos sin datos reales de cliente.
-- Confirmar que referencias tipo `TCK12345`, `HND12345`, emails y clientes numericos se anonimicen antes de enviarse.
+Flujo:
 
-## 9. Problemas Frecuentes
+1. Abre uno o varios editores ABAP en Eclipse.
+2. Abre tambien includes, clases, funciones u otros objetos relacionados si quieres que formen parte del contexto.
+3. Escribe una pregunta libre en `Question`.
+4. Pulsa `Ask`.
+5. La caja `Question` se limpia inmediatamente.
+6. El plug-in lee automaticamente todos los editores de texto abiertos, tanto la pestana visible como las pestanas abiertas en segundo plano.
+7. La respuesta aparece en el panel inferior.
 
-- `OPENAI_API_KEY is required.`: revisa las rutas que aparecen en el propio mensaje. Si no aparece `C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`, actualiza el plugin, limpia el runtime workspace o usa `-DABAP_ECLIPSE_ASSISTANT_ENV_FILE=C:\Users\Admin\SapAssistant\AbapEclipseAssistant\.env`.
-- `Compliance level '11' is incompatible with target level '21'`: actualiza el proyecto y refresca `.classpath` y `build.properties`; el contenedor JRE debe ser `JavaSE-11`, y `build.properties` debe tener `javacSource = 11` y `javacTarget = 11`. Despues ejecuta `Project > Clean`.
-- `javac is not recognized`: instala Java 17+ y comprueba el `PATH`.
-- La vista no aparece: revisa que PDE haya reconocido `plugin.xml` y que el proyecto no tenga errores.
-- Error HTTP de OpenAI: revisa la clave, el modelo configurado y la conectividad.
+Ejemplos de preguntas:
+
+```text
+Explica este programa y dime posibles defectos reales.
+```
+
+```text
+Propón una refactorizacion segura. Dame el codigo sugerido, pero no asumas que lo has aplicado.
+```
+
+```text
+Analiza el flujo usando todos los editores abiertos. Si falta algun include, indicalo como TODO/TBC.
+```
+
+## 9. Que Contexto Lee
+
+Lee automaticamente:
+
+- editor activo
+- otros editores de texto abiertos
+- programas/includes/clases abiertos en pestanas de Eclipse
+
+No lee automaticamente:
+
+- includes no abiertos
+- programas no abiertos
+- objetos SAP que solo existan en el repositorio pero no esten en pestanas
+- SAP GUI fuera de Eclipse
+
+Para que un include u objeto relacionado entre en contexto, abrelo en una pestana antes de pulsar `Ask`.
+
+## 10. Problemas Frecuentes
+
+- `OPENAI_API_KEY is required.`: revisa las rutas que aparecen en el error y confirma que `.env` existe en una de ellas.
+- La UI antigua sigue apareciendo: reinstala/exporta el jar nuevo y reinicia Eclipse con `-clean`.
+- `Compliance level '11' is incompatible with target level '21'`: confirma `JavaSE-11` en `.classpath` y `javacSource = 11` / `javacTarget = 11` en `build.properties`; luego ejecuta `Project > Clean`.
+- La respuesta ignora un include: abre ese include como pestana de Eclipse y vuelve a preguntar.
+- Error HTTP de OpenAI: revisa la clave, el modelo y conectividad.
+
+## 11. Pruebas Manuales Recomendadas
+
+- Preguntar con un solo programa Z de prueba abierto.
+- Preguntar con programa principal e includes abiertos.
+- Confirmar que la caja `Question` se borra tras pulsar `Ask`.
+- Confirmar que el estado indica el numero de editores abiertos enviados.
+- Pedir codigo sugerido y verificar que no afirma haber modificado SAP.
+- Usar solo codigo anonimizado o no confidencial.

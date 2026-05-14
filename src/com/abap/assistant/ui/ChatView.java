@@ -94,6 +94,7 @@ public final class ChatView extends ViewPart {
 
         AssistantMode mode = AssistantMode.values()[Math.max(0, modeCombo.getSelectionIndex())];
         AssistantRequest request = new AssistantRequest(mode, question, context);
+        questionText.setText("");
         setBusy(true);
         outputText.setText("");
         setStatus("Calling OpenAI - " + editorContexts.size() + " open editor(s)");

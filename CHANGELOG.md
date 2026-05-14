@@ -16,3 +16,4 @@
 - Fixed PDE build/export Java settings by adding explicit `javacSource = 11` and `javacTarget = 11`, and added an Eclipse project import/build smoke test.
 - Added a freer chat workflow with separate question/context fields, active-editor loading, open-editor context loading, automatic active-editor refresh on ask, related ABAP reference hints, and code-suggestion prompting that does not claim to apply SAP changes.
 - Simplified the chat workflow so `Ask` automatically reads every open Eclipse text editor tab by default, without manual context-loading buttons or a visible context panel.
+- Cleared the `Question` box immediately after each accepted ask request and refreshed user/IP Box documentation to match the current open-editor chat behaviour.

@@ -1,83 +1,102 @@
 # ABAP Chat Assistant
 
-ABAP Chat Assistant is an Eclipse PDE plug-in prototype for SAP ABAP Development Tools workflows. It provides an Eclipse view that can load selected ABAP text, classify whether the context appears public SAP standard or custom/client-specific, redact sensitive values, and send a carefully constrained prompt to the OpenAI Responses API.
+ABAP Chat Assistant is an Eclipse PDE plug-in for SAP ABAP Development Tools workflows. It provides a small chat view inside Eclipse that reads every open text editor tab as context when the user presses `Ask`, sends a privacy-aware prompt to the OpenAI Responses API, and returns analysis or suggested ABAP code for the user to review.
 
-The project is designed, directed, reviewed and validated by the project owner, using AI-assisted development tools to accelerate implementation.
-
-## Current Features
-
-- Eclipse view contribution: `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
-- Free-form ABAP chat with optional task modes for explaining ABAP, finding possible defects, suggesting tests, proposing safe refactoring ideas, and general ABAP/ADT help.
-- Automatic context loading from every open Eclipse text editor tab when `Ask` is pressed.
-- Related ABAP reference detection for includes, submitted programs, function modules and transactions present in the loaded context.
-- Sensitive value redaction for OpenAI-style API keys, ticket references, handover references, invoice references, email addresses, and SAP client numbers.
-- Context classification to keep SAP standard/public knowledge separate from client-specific Z/Y/private knowledge.
-- OpenAI Responses API client using `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`.
-- Local core tests and metadata validation through `scripts/test.ps1`.
-- Optional live OpenAI smoke test through `scripts/smoke-openai.ps1`.
-
-## Repository And Secrets
-
-The intended GitHub repository is:
+The project is separate from `SapIsuAssistant`. The intended GitHub repository is:
 
 `https://github.com/Andresvelascofdez/AbapEclipsePlugin`
 
-Do not commit real API keys. `.env` is intentionally ignored by git. Use `.env.example` as a template:
+## Current Behaviour
+
+- The Eclipse view is available at `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
+- The user writes a free-form question in `Question` and presses `Ask`.
+- On each accepted question, the `Question` box is cleared immediately.
+- The plug-in automatically reads every open Eclipse text editor tab, including background tabs that are not focused.
+- The active editor is included first, followed by the other open text editors.
+- There is no visible context box and no manual context-loading buttons.
+- The assistant can explain ABAP, find possible defects, suggest tests, propose safe refactorings, answer general ADT questions, and suggest ABAP snippets.
+- Suggested code is only returned as text. The plug-in does not write to SAP or modify repository objects.
+- The prompt detects related ABAP references such as `INCLUDE`, `SUBMIT`, `CALL FUNCTION`, `CALL TRANSACTION`, and `PERFORM ... IN PROGRAM` in the opened context.
+- OpenAI-style API keys, ticket references, handover references, invoice references, email addresses and SAP client numbers are redacted before sending prompts.
+
+## Limits
+
+- The plug-in reads open Eclipse text editors only.
+- It does not yet fetch unopened ABAP includes, classes, function modules or programs from the SAP repository.
+- To include related objects, open them in Eclipse editor tabs before pressing `Ask`.
+- Real SAP changes must be made manually by the user after reviewing any suggested code.
+- Do not use real client secrets, production data, ticket IDs, invoices, credentials or confidential examples in prompts.
+
+## Secrets
+
+Do not commit real API keys. `.env` is ignored by git. Use `.env.example` as a template:
 
 ```powershell
 Copy-Item .env.example .env
 notepad .env
 ```
 
-If an API key was shared in a chat, log, screenshot, commit, or ticket, revoke it and create a new key before using the project.
+Expected local values:
 
-When running inside Eclipse, the plug-in checks `.env` in the imported `com.abap.assistant` project first, then other workspace projects, then an optional `ABAP_ECLIPSE_ASSISTANT_ENV_DIR`, then the loaded plug-in bundle/code location, then the workspace root, then Eclipse's process working directory. This covers PDE "Run As > Eclipse Application" launches where the runtime workspace is different from the development workspace. You can also set `ABAP_ECLIPSE_ASSISTANT_ENV_FILE` to an explicit `.env` path.
+```text
+OPENAI_API_KEY=replace-with-your-new-openai-api-key
+OPENAI_MODEL=gpt-5-mini
+OPENAI_BASE_URL=https://api.openai.com/v1/responses
+```
+
+Inside Eclipse, the plug-in checks `.env` in this order:
+
+- explicit `ABAP_ECLIPSE_ASSISTANT_ENV_FILE`
+- imported `com.abap.assistant` project
+- other workspace projects
+- optional `ABAP_ECLIPSE_ASSISTANT_ENV_DIR`
+- loaded bundle/code location
+- workspace root
+- Eclipse process working directory
 
 ## Validation
 
-Run the automated validation from the project root:
+Run local validation:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test.ps1
 ```
 
-The validation compiles the core assistant and CLI classes with Java 11, runs core tests, validates Eclipse plug-in metadata, verifies the icon, and scans tracked project files for accidental OpenAI-style API keys.
-
-Run the Eclipse runtime smoke test against a real Eclipse/PDE installation:
+Run the Eclipse runtime smoke test:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
 ```
 
-Run the Eclipse import/build smoke test to validate `.project`, `.classpath`, `.settings` and `build.properties` inside Eclipse:
+Run the Eclipse import/build smoke test:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse"
 ```
 
-To reproduce the previously reported persisted-workspace issue, run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -WorkspaceTemplate "C:\Users\Admin\runtime-EclipseApplication" -KeepPersistedState
-```
-
-Run a live OpenAI smoke test from the project root after creating a local `.env`:
+Run the live OpenAI smoke test after configuring `.env`:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"
 ```
 
-## Eclipse Import Prerequisites
+## Manual Test
 
-This project is an Eclipse plug-in project. The Eclipse installation used for development must include Plug-in Development Environment (PDE). If `ChatView.java` shows errors such as `The import org.eclipse cannot be resolved`, `Button cannot be resolved to a type`, or `SWT cannot be resolved`, the Eclipse target platform is not resolving PDE/SWT/JFace dependencies.
+1. Install or launch the updated plug-in.
+2. Open one ABAP program in Eclipse ADT.
+3. Open any includes or related ABAP objects you want included as separate editor tabs.
+4. Open `ABAP Chat`.
+5. Ask a free-form question, for example:
 
-Check a local Eclipse installation with:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/check-eclipse-prereqs.ps1 -EclipseHome "C:\path\to\eclipse"
+```text
+Explain this code and list likely defects. If related includes are missing, say so.
 ```
 
-## Installation And Testing
+6. Confirm the `Question` box clears after pressing `Ask`.
+7. Confirm the status says how many open editors were sent.
+8. Confirm the response refers to the opened code and does not claim to apply changes.
+
+## Installation Guide
 
 See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md) and [docs/ECLIPSE_TEST_PLAN.md](docs/ECLIPSE_TEST_PLAN.md).
 

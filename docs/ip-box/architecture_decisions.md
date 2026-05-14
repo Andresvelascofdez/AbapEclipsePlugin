@@ -83,7 +83,7 @@ This documentation is a technical development record. It is not legal or tax adv
 
 - Context: the owner requested a more automatic, natural chat workflow that can read opened ABAP code and propose code changes.
 - Options considered: keep mode-only analysis, add free-form chat over copied text, require manual context-loading buttons, automatically read all open Eclipse editors, or attempt direct SAP repository edits.
-- Selected option: support free-form questions that automatically include all open Eclipse text editor tabs and provide code suggestions only, leaving all SAP changes for explicit user confirmation/copying.
+- Selected option: support free-form questions that automatically include all open Eclipse text editor tabs, clear the question input after each accepted request, and provide code suggestions only, leaving all SAP changes for explicit user confirmation/copying.
 - Reason for selection: this improves usability while avoiding unapproved writes to SAP systems and keeping sensitive/custom code boundaries visible.
 - Expected benefit: developers can ask natural questions against the currently opened ABAP working set and receive suggested snippets with less manual copy/paste.
 - Risks/limitations: unopened nested includes/programs are not automatically fetched from SAP. The plug-in detects references and can use them when the user opens the related objects as editor tabs.

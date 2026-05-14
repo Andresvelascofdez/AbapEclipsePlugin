@@ -41,3 +41,18 @@ This documentation is a technical development record. It is not legal or tax adv
 - Functional decision made by owner: use `.env` in the project for testing.
 - Codex response: implemented Eclipse workspace `.env` discovery and validated it with Eclipse smoke tests plus a live OpenAI smoke test.
 - Manual testing by owner: TODO/TBC after pulling the fixed version and relaunching Eclipse.
+
+## 2026-05-14 - Free-Form Open-Editor Chat Feedback
+
+- Requirement/problem reported by owner: the initial button-driven workflow was not automatic enough; the desired behaviour is closer to a chat that can read the relevant open working context.
+- Functional decision made by owner: the plug-in should read all open Eclipse editor tabs by default when asking a question, without manual context-loading buttons or a visible context panel.
+- Evidence provided by owner: screenshot of a Z report opened in ADT and ABAP Chat returning useful output.
+- Codex response: simplified the UI, made `Ask` gather all open text editors automatically, preserved user-confirmed/manual code application, and updated validation/documentation.
+- Manual testing by owner: owner reported that the automatic open-editor behaviour works reasonably.
+
+## 2026-05-14 - Question Clearing And Documentation Request
+
+- Requirement/problem reported by owner: after asking, the text remained in the `Question` box.
+- Functional decision made by owner: each accepted question should clear the input box, and all documentation including IP Box records should reflect the current workflow.
+- Codex response: updated `ChatView` to clear `Question` after a valid ask request, refreshed README, installation guide, test plan and IP Box records, and will rerun validation before publishing.
+- Manual testing by owner: TODO/TBC after installing the updated bundle.
