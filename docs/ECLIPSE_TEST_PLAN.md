@@ -6,8 +6,10 @@ This plan defines the validation required before confirming that ABAP Chat Assis
 
 - Runtime bundle id: `com.abap.assistant`.
 - Runtime view id/class: `com.abap.assistant.ui.ChatView`.
-- Current UI model: free-form question box plus response panel.
+- Current UI model: free-form question box, response panel, compact context summary and status line.
 - Current context model: every open Eclipse text editor tab is read automatically when `Ask` is pressed.
+- Related context model: detected ABAP references are matched against text resources already present in the local Eclipse workspace and included when found.
+- Conversation model: recent Q/A turns in the same view session are sent as bounded history.
 - Current write model: suggested ABAP code is text only; the plug-in does not write to SAP.
 
 ## Automated Tests
@@ -23,7 +25,8 @@ Expected result:
 - Java core and CLI classes compile with Java 11.
 - Core tests pass.
 - Free-chat prompt rules are validated.
-- Related ABAP references are detected.
+- Related ABAP references are detected, including includes, programs, function modules, transactions and classes.
+- Raw reference names are available for workspace lookup.
 - `plugin.xml` exposes `com.abap.assistant.ui.ChatView`.
 - `MANIFEST.MF` exposes `com.abap.assistant`.
 - No OpenAI-style API key is committed.
@@ -42,7 +45,7 @@ Expected result:
 - Eclipse starts with a temporary workspace/configuration.
 - The smoke plug-in opens `ABAP Chat`.
 - The view class and site id are `com.abap.assistant.ui.ChatView`.
-- The view opens with the simplified free-chat UI.
+- The view opens with the free-chat UI.
 - No ABAP Assistant view creation, icon or bundle resolution errors appear in the workspace log.
 
 ### 3. Eclipse Import/Build Smoke Test
@@ -109,26 +112,57 @@ Explain this program and list likely defects.
 Expected result:
 
 - The question box clears after pressing `Ask`.
-- Status says OpenAI is called with one open editor.
+- The context summary says one editor was sent.
 - The response refers to the opened program.
 - The response does not claim to modify SAP.
 
 ### Multiple Open Editors
 
 1. Open a main ABAP program.
-2. Open one or more includes or related objects in additional tabs.
+2. Open one or more includes, classes or related objects in additional tabs.
 3. Ask:
 
 ```text
-Analyze the flow using all open editors. If a related include is missing, mark it TODO/TBC.
+Analyze the flow using all open editors. If a related object is missing, mark it TODO/TBC.
 ```
 
 Expected result:
 
 - The question box clears after pressing `Ask`.
-- Status shows the number of open editors.
+- The context summary shows the number of open editors.
 - The response uses the main program and open related objects.
-- Missing unopened references are treated as TODO/TBC.
+- Missing references are treated as TODO/TBC.
+
+### Related Workspace Sources
+
+1. Open a program that references a local include, program or class name.
+2. Ensure the referenced source file exists as a text resource in the same Eclipse workspace/project.
+3. Ask:
+
+```text
+Use all loaded and related workspace context to explain the flow.
+```
+
+Expected result:
+
+- The context summary shows related source count greater than zero when a matching workspace file exists.
+- The response distinguishes loaded context from unresolved references.
+- No remote SAP object is fetched without being opened or available locally.
+
+### Conversation History
+
+1. Ask a first question and wait for the response.
+2. Ask a follow-up:
+
+```text
+Now summarize only the defects from your previous answer.
+```
+
+Expected result:
+
+- The context summary shows at least one history turn.
+- The response can use the previous answer.
+- History remains bounded; very long sessions are truncated locally.
 
 ### Suggested Code
 
@@ -150,7 +184,8 @@ Use anonymised placeholders only. If a test snippet contains ticket-like values 
 
 ## Known Limits
 
-- Unopened SAP repository objects are not fetched automatically.
+- Unopened remote SAP repository objects are not fetched automatically.
+- Local related-source lookup only uses text resources available in the Eclipse workspace.
 - SAP GUI windows outside Eclipse are not read.
-- Large editor sets are truncated locally to keep requests bounded.
+- Large editor sets, related sources and history are truncated locally to keep requests bounded.
 - Real SAP code changes are never applied by the plug-in.

@@ -154,7 +154,7 @@ The purpose is to preserve a truthful technical and development record showing:
 - which decisions were made by the project owner
 - how AI-assisted development was used
 - how the software evolved over time
-- how the tool may improve productivity in SAP IS-U / ABAP consulting work
+- how the tool may improve productivity in SAP ABAP/Eclipse consulting work
 
 Do not invent productivity percentages, financial values, tax conclusions or legal statements.
 If such numbers are needed later, leave placeholders for the project owner or tax advisor.
@@ -165,7 +165,7 @@ Add a disclaimer in the IP Box documentation:
 IP Box documentation should support the position that:
 
 - the tool is proprietary software developed under the direction of the project owner
-- the tool solves a specific technical/business problem in SAP IS-U / ABAP consulting
+- the tool solves a specific technical/business problem in SAP ABAP/Eclipse consulting workflows
 - the tool has a documented architecture and development history
 - the tool includes original requirements, design decisions, testing and validation
 - AI tools were used as development assistance, while ownership, direction, review and acceptance remained with the project owner
@@ -174,5 +174,5 @@ GitHub publishing rule:
 
 - After completing each key task or milestone, Codex must commit and push the relevant changes to the correct GitHub repository for this project: https://github.com/Andresvelascofdez/AbapEclipsePlugin.
 - Before pushing, Codex must verify that the local git remote points to Andresvelascofdez/AbapEclipsePlugin.
-- Codex must never push this project's changes to https://github.com/Andresvelascofdez/SapIsuAssistant or to any unrelated repository.
+- Codex must never push this project's changes to any unrelated repository.
 - If the git remote is missing or points to the wrong repository, Codex must stop, report the issue, and ask the project owner to confirm the safe repository setup before pushing.

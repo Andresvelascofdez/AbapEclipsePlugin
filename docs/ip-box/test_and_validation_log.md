@@ -103,3 +103,19 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: no product issue found. The parallel test collision is a test harness limitation because two `test-eclipse.ps1` runs share `build\eclipse-smoke`.
 - Follow-up required: owner should install the updated bundle and manually confirm the `Question` field clears after pressing `Ask`.
 - Reviewer/validator: Codex automated validation; owner UI validation TODO/TBC.
+
+## 2026-05-14 - Automatic Context Snapshot And History Validation
+
+- Tested feature: open-editor context snapshot, related local workspace source lookup, ABAP class/reference extraction, conversation history and context summary UI.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Test scenario 3: run clean Eclipse runtime smoke test.
+- Test scenario 4: run runtime `.env` smoke test.
+- Test scenario 5: run persisted-workspace Eclipse runtime smoke test.
+- Test scenario 6: run live OpenAI smoke test with the local non-committed `.env`.
+- Expected result: core tests pass, reference extraction includes class references and raw names for lookup, Eclipse imports/builds the project without markers, the runtime opens `ABAP Chat`, `.env` discovery remains valid, persisted workspace state does not break the view, and live OpenAI request returns a response.
+- Actual result: all scenarios passed. One interim Eclipse import/build run caught an unavailable `IFileEditorInput` dependency; the import was removed and the full suite passed after the fix.
+- Status: Passed.
+- Issues found: `IFileEditorInput` was not available to the PDE project with current dependencies; fixed by using the editor input adapter path already supported by the bundle dependencies.
+- Follow-up required: owner manual UI validation with real ADT open editors remains TODO/TBC.
+- Reviewer/validator: Codex automated validation; owner manual UI validation TODO/TBC.

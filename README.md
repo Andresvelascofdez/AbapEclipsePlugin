@@ -1,29 +1,33 @@
 # ABAP Chat Assistant
 
-ABAP Chat Assistant is an Eclipse PDE plug-in for SAP ABAP Development Tools workflows. It provides a small chat view inside Eclipse that reads every open text editor tab as context when the user presses `Ask`, sends a privacy-aware prompt to the OpenAI Responses API, and returns analysis or suggested ABAP code for the user to review.
+ABAP Chat Assistant is an Eclipse PDE plug-in for SAP ABAP Development Tools workflows. It adds a free-form chat view inside Eclipse that reads the developer's open ABAP/text editor working set, sends a privacy-aware prompt to the OpenAI Responses API, and returns explanations, defect analysis, test ideas or suggested ABAP snippets for manual review.
 
-The project is separate from `SapIsuAssistant`. The intended GitHub repository is:
+Project repository:
 
 `https://github.com/Andresvelascofdez/AbapEclipsePlugin`
 
 ## Current Behaviour
 
 - The Eclipse view is available at `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
-- The user writes a free-form question in `Question` and presses `Ask`.
-- On each accepted question, the `Question` box is cleared immediately.
+- The user writes a natural-language question in `Question` and presses `Ask`.
+- On each accepted question, the `Question` box clears immediately.
 - The plug-in automatically reads every open Eclipse text editor tab, including background tabs that are not focused.
 - The active editor is included first, followed by the other open text editors.
-- There is no visible context box and no manual context-loading buttons.
-- The assistant can explain ABAP, find possible defects, suggest tests, propose safe refactorings, answer general ADT questions, and suggest ABAP snippets.
-- Suggested code is only returned as text. The plug-in does not write to SAP or modify repository objects.
-- The prompt detects related ABAP references such as `INCLUDE`, `SUBMIT`, `CALL FUNCTION`, `CALL TRANSACTION`, and `PERFORM ... IN PROGRAM` in the opened context.
+- The plug-in detects ABAP references such as `INCLUDE`, `SUBMIT`, `CALL FUNCTION`, `CALL TRANSACTION`, `PERFORM ... IN PROGRAM` and common class usages.
+- When those references match text files already present in the Eclipse workspace, the plug-in adds those related workspace sources to the prompt automatically.
+- References that cannot be resolved from the open editors or local workspace are still listed in the prompt as TODO/TBC context.
+- A compact context summary is shown in the view, for example editor count, related source count, detected references, character count and history turns.
+- Recent questions and answers in the same view session are included as conversation history, bounded locally to keep prompts controlled.
+- There is no visible context box and no manual context-loading button.
+- Suggested code is returned only as text. The plug-in does not write to SAP, activate objects, or apply repository changes.
 - OpenAI-style API keys, ticket references, handover references, invoice references, email addresses and SAP client numbers are redacted before sending prompts.
 
 ## Limits
 
-- The plug-in reads open Eclipse text editors only.
-- It does not yet fetch unopened ABAP includes, classes, function modules or programs from the SAP repository.
-- To include related objects, open them in Eclipse editor tabs before pressing `Ask`.
+- The plug-in reads Eclipse text editors and matching text resources that are already available in the local Eclipse workspace.
+- It does not log into SAP or fetch remote repository objects that are not materialised in Eclipse/workspace resources.
+- SAP GUI windows outside Eclipse are not read.
+- Large context is truncated locally to keep requests bounded.
 - Real SAP changes must be made manually by the user after reviewing any suggested code.
 - Do not use real client secrets, production data, ticket IDs, invoices, credentials or confidential examples in prompts.
 
@@ -84,21 +88,30 @@ powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respo
 
 1. Install or launch the updated plug-in.
 2. Open one ABAP program in Eclipse ADT.
-3. Open any includes or related ABAP objects you want included as separate editor tabs.
+3. Open optional related objects or ensure matching source files already exist in the local workspace.
 4. Open `ABAP Chat`.
 5. Ask a free-form question, for example:
 
 ```text
-Explain this code and list likely defects. If related includes are missing, say so.
+Explain this program, inspect related context, and list likely defects. If something is missing, mark it TODO/TBC.
 ```
 
 6. Confirm the `Question` box clears after pressing `Ask`.
-7. Confirm the status says how many open editors were sent.
-8. Confirm the response refers to the opened code and does not claim to apply changes.
+7. Confirm the context summary shows the number of editors, related sources, references and history turns.
+8. Confirm a second question can refer back to the previous answer.
+9. Confirm the response refers to the opened code and does not claim to apply changes.
 
 ## Installation Guide
 
 See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md) and [docs/ECLIPSE_TEST_PLAN.md](docs/ECLIPSE_TEST_PLAN.md).
+
+## Suggested Next Improvements
+
+- Add a read-only dependency graph panel showing detected includes, programs, function modules and classes with loaded/unresolved status.
+- Add an explicit "clear chat history" command for long Eclipse sessions.
+- Add optional ADT-aware remote object lookup after a deliberate user action, keeping it read-only.
+- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing `Question`, and verifying the context summary.
+- Add local prompt-size controls per workspace to tune max editors, related files and history length.
 
 ## OpenAI API
 

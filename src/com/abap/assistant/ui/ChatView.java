@@ -1,9 +1,17 @@
 package com.abap.assistant.ui;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import com.abap.assistant.core.AbapContextClassifier;
+import com.abap.assistant.core.AbapReferenceExtractor;
 import com.abap.assistant.core.AssistantMode;
 import com.abap.assistant.core.AssistantPromptBuilder;
 import com.abap.assistant.core.AssistantRequest;
@@ -14,6 +22,11 @@ import com.abap.assistant.core.OpenAiSettings;
 import com.abap.assistant.core.SensitiveDataRedactor;
 import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,12 +49,19 @@ import org.eclipse.ui.texteditor.ITextEditor;
 public final class ChatView extends ViewPart {
     public static final String ID = "com.abap.assistant.ui.ChatView";
     private static final int MAX_CONTEXT_CHARS = 60000;
+    private static final int MAX_RELATED_FILES = 10;
+    private static final int MAX_RELATED_FILE_CHARS = 18000;
+    private static final int MAX_HISTORY_TURNS = 6;
+    private static final int MAX_HISTORY_CHARS = 18000;
 
     private Combo modeCombo;
     private Text questionText;
     private Text outputText;
     private Label statusLabel;
+    private Label contextSummaryLabel;
     private Button askButton;
+    private final AbapReferenceExtractor referenceExtractor = new AbapReferenceExtractor();
+    private final List<ConversationTurn> conversationHistory = new ArrayList<>();
 
     @Override
     public void createPartControl(Composite parent) {
@@ -72,6 +92,10 @@ public final class ChatView extends ViewPart {
         outputText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
         outputText.setLayoutData(fillBoth(320));
 
+        contextSummaryLabel = new Label(parent, SWT.NONE);
+        contextSummaryLabel.setLayoutData(fillHorizontal());
+        setContextSummary("Context: open ABAP/text editors will be read when you ask.");
+
         statusLabel = new Label(parent, SWT.NONE);
         statusLabel.setLayoutData(fillHorizontal());
         setStatus("Ready - open editors are read automatically");
@@ -84,8 +108,8 @@ public final class ChatView extends ViewPart {
 
     private void askAssistant() {
         String question = questionText.getText();
-        List<EditorContext> editorContexts = readOpenEditors();
-        String context = trimContext(formatEditorContexts(editorContexts));
+        ContextSnapshot snapshot = buildContextSnapshot();
+        String context = snapshot.promptContextWithHistory(formatConversationHistory());
 
         if ((question == null || question.isBlank()) && (context == null || context.isBlank())) {
             setStatus("Enter a question or open an ABAP/text editor first");
@@ -95,9 +119,11 @@ public final class ChatView extends ViewPart {
         AssistantMode mode = AssistantMode.values()[Math.max(0, modeCombo.getSelectionIndex())];
         AssistantRequest request = new AssistantRequest(mode, question, context);
         questionText.setText("");
+        setContextSummary(snapshot.summary(conversationHistory.size()));
         setBusy(true);
         outputText.setText("");
-        setStatus("Calling OpenAI - " + editorContexts.size() + " open editor(s)");
+        setStatus("Calling OpenAI - " + snapshot.openEditorCount() + " editor(s), "
+            + snapshot.relatedContextCount() + " related source(s)");
 
         Job job = new Job("ABAP Chat Assistant request") {
             @Override
@@ -109,6 +135,8 @@ public final class ChatView extends ViewPart {
                     AssistantResponse response = service.answer(request);
                     updateUi(() -> {
                         outputText.setText(response.text());
+                        addConversationTurn(question, response.text());
+                        setContextSummary(snapshot.summary(conversationHistory.size()));
                         setStatus("Done - " + response.privacyScope());
                         setBusy(false);
                     });
@@ -158,7 +186,13 @@ public final class ChatView extends ViewPart {
         if (document == null || document.get().isBlank()) {
             return null;
         }
-        return new EditorContext(editor.getTitle(), document.get());
+        IFile file = editorFile(textEditor);
+        return new EditorContext(editor.getTitle(), document.get(), file);
+    }
+
+    private static IFile editorFile(ITextEditor textEditor) {
+        Object fileAdapter = textEditor.getEditorInput().getAdapter(IFile.class);
+        return fileAdapter instanceof IFile ? (IFile) fileAdapter : null;
     }
 
     private ITextEditor asTextEditor(IEditorPart editor) {
@@ -171,6 +205,16 @@ public final class ChatView extends ViewPart {
             return (ITextEditor) adapter;
         }
         return null;
+    }
+
+    private ContextSnapshot buildContextSnapshot() {
+        List<EditorContext> openEditors = readOpenEditors();
+        List<String> detectedReferences = referenceExtractor.extractNames(formatEditorContexts(openEditors));
+        List<EditorContext> relatedContexts = resolveRelatedWorkspaceSources(openEditors, detectedReferences);
+        List<EditorContext> allResolvedContexts = new ArrayList<>(openEditors);
+        allResolvedContexts.addAll(relatedContexts);
+        List<String> unresolvedReferences = unresolvedReferences(detectedReferences, allResolvedContexts);
+        return new ContextSnapshot(openEditors, relatedContexts, detectedReferences, unresolvedReferences);
     }
 
     private List<EditorContext> readOpenEditors() {
@@ -198,6 +242,169 @@ public final class ChatView extends ViewPart {
         return contexts;
     }
 
+    private List<EditorContext> resolveRelatedWorkspaceSources(List<EditorContext> openEditors, List<String> referenceNames) {
+        if (openEditors.isEmpty() || referenceNames.isEmpty()) {
+            return List.of();
+        }
+
+        Set<IProject> projects = new LinkedHashSet<>();
+        Set<String> openFingerprints = new HashSet<>();
+        for (EditorContext context : openEditors) {
+            if (context.file() != null && context.file().getProject() != null) {
+                projects.add(context.file().getProject());
+            }
+            openFingerprints.add(context.fingerprint());
+        }
+
+        if (projects.isEmpty()) {
+            return List.of();
+        }
+
+        List<EditorContext> relatedContexts = new ArrayList<>();
+        Set<String> relatedPaths = new HashSet<>();
+        for (IProject project : projects) {
+            if (relatedContexts.size() >= MAX_RELATED_FILES) {
+                break;
+            }
+            collectRelatedSources(project, referenceNames, openFingerprints, relatedPaths, relatedContexts);
+        }
+        return relatedContexts;
+    }
+
+    private void collectRelatedSources(
+        IProject project,
+        List<String> referenceNames,
+        Set<String> openFingerprints,
+        Set<String> relatedPaths,
+        List<EditorContext> relatedContexts) {
+
+        try {
+            project.accept(resource -> {
+                if (relatedContexts.size() >= MAX_RELATED_FILES) {
+                    return false;
+                }
+                if (resource instanceof IContainer && shouldSkipContainer(resource)) {
+                    return false;
+                }
+                if (!(resource instanceof IFile)) {
+                    return true;
+                }
+
+                IFile file = (IFile) resource;
+                if (!isReadableTextCandidate(file) || !matchesAnyReference(file, referenceNames)) {
+                    return true;
+                }
+
+                String path = file.getFullPath().toString();
+                if (relatedPaths.contains(path)) {
+                    return true;
+                }
+
+                String text = readFileText(file, MAX_RELATED_FILE_CHARS);
+                if (text.isBlank()) {
+                    return true;
+                }
+
+                EditorContext context = new EditorContext("Related source: " + file.getProjectRelativePath(), text, file);
+                if (!openFingerprints.contains(context.fingerprint())) {
+                    relatedContexts.add(context);
+                    relatedPaths.add(path);
+                }
+                return true;
+            });
+        } catch (CoreException exception) {
+            setStatus("Some related workspace sources could not be inspected: " + exception.getMessage());
+        }
+    }
+
+    private static boolean shouldSkipContainer(IResource resource) {
+        String name = resource.getName();
+        return ".git".equals(name)
+            || ".metadata".equals(name)
+            || "bin".equals(name)
+            || "build".equals(name)
+            || "target".equals(name)
+            || "node_modules".equals(name)
+            || ".settings".equals(name);
+    }
+
+    private static boolean isReadableTextCandidate(IFile file) {
+        String name = file.getName().toLowerCase(Locale.ROOT);
+        if (name.endsWith(".class")
+            || name.endsWith(".jar")
+            || name.endsWith(".png")
+            || name.endsWith(".jpg")
+            || name.endsWith(".jpeg")
+            || name.endsWith(".gif")
+            || name.endsWith(".zip")
+            || name.endsWith(".pdf")
+            || name.endsWith(".dll")
+            || name.endsWith(".exe")) {
+            return false;
+        }
+        try {
+            if (!file.exists()) {
+                return false;
+            }
+            if (file.getLocation() == null) {
+                return true;
+            }
+            return file.getLocation().toFile().length() <= MAX_RELATED_FILE_CHARS * 4L;
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
+    private static boolean matchesAnyReference(IFile file, List<String> referenceNames) {
+        String path = normalizeReference(file.getProjectRelativePath().toString());
+        String name = normalizeReference(file.getName());
+        for (String referenceName : referenceNames) {
+            String reference = normalizeReference(referenceName);
+            if (!reference.isBlank() && (name.contains(reference) || path.contains(reference))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String readFileText(IFile file, int maxChars) {
+        try (InputStream stream = file.getContents(true)) {
+            byte[] bytes = stream.readAllBytes();
+            String text = new String(bytes, StandardCharsets.UTF_8);
+            if (text.length() <= maxChars) {
+                return text;
+            }
+            return text.substring(0, maxChars)
+                + System.lineSeparator()
+                + "[Related source truncated locally.]";
+        } catch (CoreException | IOException exception) {
+            return "";
+        }
+    }
+
+    private static List<String> unresolvedReferences(List<String> detectedReferences, List<EditorContext> relatedContexts) {
+        if (detectedReferences.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> unresolved = new ArrayList<>();
+        for (String reference : detectedReferences) {
+            boolean resolved = false;
+            String normalizedReference = normalizeReference(reference);
+            for (EditorContext context : relatedContexts) {
+                String normalizedTitle = normalizeReference(context.title());
+                if (normalizedTitle.contains(normalizedReference)) {
+                    resolved = true;
+                    break;
+                }
+            }
+            if (!resolved) {
+                unresolved.add(reference);
+            }
+        }
+        return unresolved;
+    }
+
     private static boolean containsTitle(List<EditorContext> contexts, String title) {
         for (EditorContext context : contexts) {
             if (context.title().equals(title)) {
@@ -222,6 +429,34 @@ public final class ChatView extends ViewPart {
         return builder.toString();
     }
 
+    private String formatConversationHistory() {
+        if (conversationHistory.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        int start = Math.max(0, conversationHistory.size() - MAX_HISTORY_TURNS);
+        for (int index = start; index < conversationHistory.size(); index++) {
+            ConversationTurn turn = conversationHistory.get(index);
+            builder.append("User: ").append(turn.question()).append(System.lineSeparator());
+            builder.append("Assistant: ").append(turn.answer()).append(System.lineSeparator()).append(System.lineSeparator());
+        }
+        String history = builder.toString().strip();
+        if (history.length() <= MAX_HISTORY_CHARS) {
+            return history;
+        }
+        return history.substring(history.length() - MAX_HISTORY_CHARS)
+            + System.lineSeparator()
+            + "[Older conversation history truncated locally.]";
+    }
+
+    private void addConversationTurn(String question, String answer) {
+        conversationHistory.add(new ConversationTurn(question, answer));
+        while (conversationHistory.size() > MAX_HISTORY_TURNS) {
+            conversationHistory.remove(0);
+        }
+    }
+
     private static String trimContext(String context) {
         if (context == null) {
             return "";
@@ -232,6 +467,17 @@ public final class ChatView extends ViewPart {
         return context.substring(0, MAX_CONTEXT_CHARS)
             + System.lineSeparator()
             + "[Context truncated locally to keep the request bounded.]";
+    }
+
+    private static String normalizeReference(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9_/]", "");
+    }
+
+    private void setContextSummary(String value) {
+        contextSummaryLabel.setText(value == null ? "" : value);
     }
 
     private static GridData fillHorizontal() {
@@ -247,18 +493,29 @@ public final class ChatView extends ViewPart {
     private static final class EditorContext {
         private final String title;
         private final String text;
+        private final IFile file;
 
         private EditorContext(String title, String text) {
+            this(title, text, null);
+        }
+
+        private EditorContext(String title, String text, IFile file) {
             this.title = title == null || title.isBlank() ? "Untitled editor" : title;
             this.text = text == null ? "" : text;
+            this.file = file;
         }
 
         private String title() {
             return title;
         }
 
-        private String text() {
-            return text;
+        private IFile file() {
+            return file;
+        }
+
+        private String fingerprint() {
+            String path = file == null ? "" : file.getFullPath().toString();
+            return title + ":" + path + ":" + Integer.toHexString(text.hashCode());
         }
 
         private String format() {
@@ -267,6 +524,100 @@ public final class ChatView extends ViewPart {
                 + text
                 + System.lineSeparator()
                 + "```";
+        }
+    }
+
+    private static final class ConversationTurn {
+        private final String question;
+        private final String answer;
+
+        private ConversationTurn(String question, String answer) {
+            this.question = question == null || question.isBlank() ? "(no explicit question)" : question.strip();
+            this.answer = answer == null ? "" : answer.strip();
+        }
+
+        private String question() {
+            return question;
+        }
+
+        private String answer() {
+            return answer;
+        }
+    }
+
+    private static final class ContextSnapshot {
+        private final List<EditorContext> openEditors;
+        private final List<EditorContext> relatedContexts;
+        private final List<String> detectedReferences;
+        private final List<String> unresolvedReferences;
+
+        private ContextSnapshot(
+            List<EditorContext> openEditors,
+            List<EditorContext> relatedContexts,
+            List<String> detectedReferences,
+            List<String> unresolvedReferences) {
+            this.openEditors = openEditors;
+            this.relatedContexts = relatedContexts;
+            this.detectedReferences = detectedReferences;
+            this.unresolvedReferences = unresolvedReferences;
+        }
+
+        private int openEditorCount() {
+            return openEditors.size();
+        }
+
+        private int relatedContextCount() {
+            return relatedContexts.size();
+        }
+
+        private String promptContextWithHistory(String history) {
+            StringBuilder builder = new StringBuilder();
+            appendSection(builder, "Open editor context", formatEditorContexts(openEditors));
+            appendSection(builder, "Related workspace sources", formatEditorContexts(relatedContexts));
+            appendDetectedReferences(builder);
+            appendSection(builder, "Recent conversation history", history);
+            return trimContext(builder.toString());
+        }
+
+        private String summary(int historyTurns) {
+            int characters = formatEditorContexts(openEditors).length() + formatEditorContexts(relatedContexts).length();
+            return "Context: " + openEditors.size() + " editor(s), "
+                + relatedContexts.size() + " related source(s), "
+                + detectedReferences.size() + " reference(s), "
+                + characters + " char(s), history " + historyTurns + " turn(s).";
+        }
+
+        private void appendDetectedReferences(StringBuilder builder) {
+            if (detectedReferences.isEmpty() && unresolvedReferences.isEmpty()) {
+                return;
+            }
+            StringBuilder section = new StringBuilder();
+            if (!detectedReferences.isEmpty()) {
+                section.append("Detected ABAP references:").append(System.lineSeparator());
+                for (String reference : detectedReferences) {
+                    section.append("- ").append(reference).append(System.lineSeparator());
+                }
+            }
+            if (!unresolvedReferences.isEmpty()) {
+                section.append(System.lineSeparator())
+                    .append("References not loaded from the local Eclipse workspace; treat them as TODO/TBC unless present in another open editor:")
+                    .append(System.lineSeparator());
+                for (String reference : unresolvedReferences) {
+                    section.append("- ").append(reference).append(System.lineSeparator());
+                }
+            }
+            appendSection(builder, "Reference summary", section.toString());
+        }
+
+        private static void appendSection(StringBuilder builder, String title, String content) {
+            if (content == null || content.isBlank()) {
+                return;
+            }
+            if (builder.length() > 0) {
+                builder.append(System.lineSeparator()).append(System.lineSeparator());
+            }
+            builder.append("## ").append(title).append(System.lineSeparator());
+            builder.append(content.strip());
         }
     }
 }

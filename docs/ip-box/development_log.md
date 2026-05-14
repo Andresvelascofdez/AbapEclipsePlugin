@@ -5,7 +5,7 @@ This documentation is a technical development record. It is not legal or tax adv
 ## 2026-05-11 - Initial Eclipse Plug-in Scaffold
 
 - Feature/module worked on: ABAP Chat Assistant initial plug-in, core assistant services, OpenAI integration layer, validation scripts and documentation.
-- Technical objective: create a separated Eclipse PDE project for `Andresvelascofdez/AbapEclipsePlugin` without mixing it with `SapIsuAssistant`.
+- Technical objective: create a dedicated Eclipse PDE project for `Andresvelascofdez/AbapEclipsePlugin`.
 - Implementation summary: created Eclipse plug-in metadata, ABAP Chat view, core prompt builder, privacy classifier, redactor, dotenv loader, OpenAI Responses API client, CLI smoke test, automated tests, README, changelog and installation guide.
 - Files changed: project metadata files, `src/com/abap/assistant/**`, `test/com/abap/assistant/**`, `scripts/**`, `README.md`, `CHANGELOG.md`, `docs/**`.
 - User/business reason: the project owner requested development of the tasks defined in `instrucciones.md`, recurring GitHub publishing discipline, a guide to install and test in Eclipse, and validation before confirming functionality.
@@ -13,7 +13,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - GitHub commit reference: `09793a4645a734b7d8e60751a199a4facf5400a6` pushed to `Andresvelascofdez/AbapEclipsePlugin`.
 - Open limitations: live OpenAI smoke testing requires a local non-committed `.env` with a valid API key. Eclipse runtime validation must be performed in an Eclipse PDE/ADT installation.
 - AI assistance used: yes, Codex generated the initial implementation and documentation under owner direction.
-- Human decision/review notes: the project owner confirmed the GitHub destination as `Andresvelascofdez/AbapEclipsePlugin` and explicitly instructed that it must not be mixed with `Andresvelascofdez/SapIsuAssistant`.
+- Human decision/review notes: the project owner confirmed the GitHub destination as `Andresvelascofdez/AbapEclipsePlugin`.
 
 ## 2026-05-12 - Eclipse Import Error Handling
 
@@ -86,3 +86,15 @@ This documentation is a technical development record. It is not legal or tax adv
 - Open limitations: question clearing is exercised through the Eclipse UI; automated smoke tests validate view creation and build compatibility but do not yet click the UI button.
 - AI assistance used: yes.
 - Human decision/review notes: owner accepted the automatic open-editor context direction as reasonably working and requested UX polish.
+
+## 2026-05-14 - Automatic Context Snapshot, History And Documentation Separation
+
+- Feature/module worked on: ABAP Chat Eclipse UI context collection, ABAP reference extraction, conversation continuity and documentation records.
+- Technical objective: implement the first three planned improvements: automatic related-context discovery from the Eclipse workspace, bounded conversational history, and a visible compact summary of the context sent to the assistant.
+- Implementation summary: updated `ChatView` to build a context snapshot from all open text editors, resolve detected references against matching local workspace text files, include unresolved references as TODO/TBC, add bounded in-memory Q/A history, and display editor/source/reference/history counts. Extended `AbapReferenceExtractor` to expose raw reference names and detect class usages. Updated documentation and removed references to unrelated tools/projects.
+- Files changed: `src/com/abap/assistant/ui/ChatView.java`, `src/com/abap/assistant/core/AbapReferenceExtractor.java`, `src/com/abap/assistant/core/AbapContextClassifier.java`, `test/com/abap/assistant/core/AssistantCoreTest.java`, `META-INF/MANIFEST.MF`, `README.md`, `CHANGELOG.md`, `docs/**`, `instrucciones.md`.
+- User/business reason: the project owner requested a more automatic chat experience that reads the Eclipse working context, supports free follow-up questions and documents the tool independently for IP Box purposes.
+- Validation status: core validation, clean Eclipse runtime smoke test, Eclipse import/build smoke test, runtime `.env` smoke test, persisted-workspace smoke test and live OpenAI smoke test passed on 2026-05-14.
+- Open limitations: related-source lookup is read-only and limited to text resources already available in the Eclipse workspace. It does not fetch remote SAP repository objects that are not open or materialised locally.
+- AI assistance used: yes.
+- Human decision/review notes: owner selected these improvements from the suggested next-step list and required documentation cleanup before publication.

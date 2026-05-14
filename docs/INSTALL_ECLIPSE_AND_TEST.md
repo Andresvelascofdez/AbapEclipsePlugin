@@ -1,6 +1,6 @@
 # Instalacion Y Prueba En Eclipse
 
-Esta guia explica como instalar y probar ABAP Chat Assistant sin mezclarlo con `SapIsuAssistant`.
+Esta guia explica como instalar, ejecutar y validar ABAP Chat Assistant en Eclipse/ADT.
 
 ## 1. Requisitos
 
@@ -138,6 +138,7 @@ La vista actual tiene:
 - boton `Ask`
 - caja `Question`
 - panel de respuesta
+- resumen compacto de contexto
 - estado inferior
 
 No hay botones de carga manual ni caja visible de contexto.
@@ -145,12 +146,15 @@ No hay botones de carga manual ni caja visible de contexto.
 Flujo:
 
 1. Abre uno o varios editores ABAP en Eclipse.
-2. Abre tambien includes, clases, funciones u otros objetos relacionados si quieres que formen parte del contexto.
+2. Opcionalmente abre objetos relacionados o confirma que sus ficheros fuente ya existen en el workspace local.
 3. Escribe una pregunta libre en `Question`.
 4. Pulsa `Ask`.
 5. La caja `Question` se limpia inmediatamente.
 6. El plug-in lee automaticamente todos los editores de texto abiertos, tanto la pestana visible como las pestanas abiertas en segundo plano.
-7. La respuesta aparece en el panel inferior.
+7. El plug-in detecta referencias ABAP y carga ficheros de texto relacionados cuando coinciden con recursos ya disponibles en el workspace.
+8. La vista muestra un resumen: editores, fuentes relacionadas, referencias, caracteres e historial.
+9. La respuesta aparece en el panel inferior.
+10. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
 
 Ejemplos de preguntas:
 
@@ -159,11 +163,11 @@ Explica este programa y dime posibles defectos reales.
 ```
 
 ```text
-Propón una refactorizacion segura. Dame el codigo sugerido, pero no asumas que lo has aplicado.
+Propon una refactorizacion segura. Dame el codigo sugerido, pero no asumas que lo has aplicado.
 ```
 
 ```text
-Analiza el flujo usando todos los editores abiertos. Si falta algun include, indicalo como TODO/TBC.
+Analiza el flujo usando todos los editores abiertos y cualquier fuente relacionada cargada del workspace. Si falta algo, indicalo como TODO/TBC.
 ```
 
 ## 9. Que Contexto Lee
@@ -173,29 +177,91 @@ Lee automaticamente:
 - editor activo
 - otros editores de texto abiertos
 - programas/includes/clases abiertos en pestanas de Eclipse
+- ficheros de texto relacionados ya presentes en el workspace local cuando su nombre/ruta coincide con referencias detectadas
+- historial reciente de preguntas y respuestas de la misma vista
 
 No lee automaticamente:
 
-- includes no abiertos
-- programas no abiertos
-- objetos SAP que solo existan en el repositorio pero no esten en pestanas
+- objetos remotos que no esten abiertos ni materializados en el workspace local
 - SAP GUI fuera de Eclipse
+- datos de cliente externos a los editores/workspace
 
-Para que un include u objeto relacionado entre en contexto, abrelo en una pestana antes de pulsar `Ask`.
+## 10. Pruebas Manuales Recomendadas
 
-## 10. Problemas Frecuentes
+### Un Programa Abierto
+
+1. Abre un programa ABAP de prueba.
+2. Pregunta:
+
+```text
+Explica este programa y lista riesgos reales.
+```
+
+Resultado esperado:
+
+- `Question` se borra.
+- El resumen muestra `1 editor`.
+- La respuesta habla del programa abierto.
+- La respuesta no afirma que haya modificado SAP.
+
+### Varios Editores Abiertos
+
+1. Abre programa principal e includes/clases en pestanas separadas.
+2. Pregunta:
+
+```text
+Analiza el flujo completo con todo lo abierto.
+```
+
+Resultado esperado:
+
+- El resumen muestra mas de un editor.
+- La respuesta usa contexto de todas las pestanas.
+- Las referencias no disponibles aparecen como TODO/TBC.
+
+### Fuente Relacionada En Workspace
+
+1. Deja abierto un programa que contenga `INCLUDE zexample_forms.` o una referencia de clase.
+2. Verifica que existe un fichero de texto con nombre/ruta compatible en el workspace.
+3. Pregunta por el flujo.
+
+Resultado esperado:
+
+- El resumen muestra al menos una fuente relacionada si hay coincidencia local.
+- La respuesta distingue lo cargado de lo no disponible.
+
+### Historial
+
+1. Haz una pregunta sobre un programa abierto.
+2. Cuando responda, pregunta:
+
+```text
+Ahora dame una version mas corta centrada solo en defectos.
+```
+
+Resultado esperado:
+
+- El resumen muestra `history 1 turn(s)` o superior.
+- La respuesta entiende la continuidad de la conversacion.
+
+### Codigo Sugerido
+
+Pregunta:
+
+```text
+Sugiere un cambio ABAP seguro. Devuelve solo codigo para revisar manualmente.
+```
+
+Resultado esperado:
+
+- Puede devolver codigo ABAP.
+- No dice que lo haya aplicado.
+- El usuario decide si copia, adapta y activa el cambio.
+
+## 11. Problemas Frecuentes
 
 - `OPENAI_API_KEY is required.`: revisa las rutas que aparecen en el error y confirma que `.env` existe en una de ellas.
 - La UI antigua sigue apareciendo: reinstala/exporta el jar nuevo y reinicia Eclipse con `-clean`.
 - `Compliance level '11' is incompatible with target level '21'`: confirma `JavaSE-11` en `.classpath` y `javacSource = 11` / `javacTarget = 11` en `build.properties`; luego ejecuta `Project > Clean`.
-- La respuesta ignora un include: abre ese include como pestana de Eclipse y vuelve a preguntar.
+- La respuesta ignora una dependencia: abre esa dependencia como pestana o confirma que existe como fichero de texto en el workspace local.
 - Error HTTP de OpenAI: revisa la clave, el modelo y conectividad.
-
-## 11. Pruebas Manuales Recomendadas
-
-- Preguntar con un solo programa Z de prueba abierto.
-- Preguntar con programa principal e includes abiertos.
-- Confirmar que la caja `Question` se borra tras pulsar `Ask`.
-- Confirmar que el estado indica el numero de editores abiertos enviados.
-- Pedir codigo sugerido y verificar que no afirma haber modificado SAP.
-- Usar solo codigo anonimizado o no confidencial.

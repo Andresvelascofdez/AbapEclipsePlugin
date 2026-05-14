@@ -4,10 +4,10 @@ This documentation is a technical development record. It is not legal or tax adv
 
 ## 2026-05-11 - Project Direction And Repository Boundary
 
-- Requirement provided by owner: confirm access to `Andresvelascofdez/AbapEclipsePlugin`, read local `instrucciones.md`, and avoid mixing the project with `Andresvelascofdez/SapIsuAssistant`.
+- Requirement provided by owner: confirm access to `Andresvelascofdez/AbapEclipsePlugin` and read local `instrucciones.md`.
 - Functional decision made by owner: use `AbapEclipsePlugin` as the GitHub destination for this project.
-- Review/acceptance decision: owner confirmed that the project must not be mixed with `SapIsuAssistant`.
-- Business rationale: maintain a separate project history and avoid repository contamination.
+- Review/acceptance decision: owner confirmed the repository boundary.
+- Business rationale: maintain a dedicated project history and avoid repository contamination.
 
 ## 2026-05-11 - Development And Validation Request
 
@@ -55,4 +55,12 @@ This documentation is a technical development record. It is not legal or tax adv
 - Requirement/problem reported by owner: after asking, the text remained in the `Question` box.
 - Functional decision made by owner: each accepted question should clear the input box, and all documentation including IP Box records should reflect the current workflow.
 - Codex response: updated `ChatView` to clear `Question` after a valid ask request, refreshed README, installation guide, test plan and IP Box records, and will rerun validation before publishing.
+- Manual testing by owner: TODO/TBC after installing the updated bundle.
+
+## 2026-05-14 - Automatic Context And IP Box Independence Request
+
+- Requirement provided by owner: implement the first three proposed improvements: more automatic context reading, conversational follow-up support, and a summary of the context being sent.
+- Functional decision made by owner: the assistant should remain a free-form chat over the Eclipse working context, without manual context-loading buttons.
+- Documentation decision made by owner: documentation for this tool must stand independently for IP Box purposes and must not reference unrelated tools/projects.
+- Codex response: implemented local workspace related-source lookup, bounded conversation history, context summary display, documentation cleanup and planned full validation before push.
 - Manual testing by owner: TODO/TBC after installing the updated bundle.

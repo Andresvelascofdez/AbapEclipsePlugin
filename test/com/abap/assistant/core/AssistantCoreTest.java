@@ -34,7 +34,7 @@ public final class AssistantCoreTest {
     private static void classifierSeparatesCustomAndStandardContext() {
         AbapContextClassifier classifier = new AbapContextClassifier();
         assertEquals(PrivacyScope.CLIENT_SPECIFIC_CUSTOM, classifier.classify("CLASS zcl_billing_helper DEFINITION."), "Z objects are custom.");
-        assertEquals(PrivacyScope.SAP_STANDARD_PUBLIC, classifier.classify("Use BAPI_ISUACCOUNT_GETDETAIL with ADT."), "SAP hints are public standard context.");
+        assertEquals(PrivacyScope.SAP_STANDARD_PUBLIC, classifier.classify("Use BAPI_TRANSACTION_COMMIT with ADT."), "SAP hints are public standard context.");
         assertEquals(PrivacyScope.MIXED_OR_UNKNOWN, classifier.classify("zcl_helper calls BAPI_TRANSACTION_COMMIT."), "Custom plus standard is mixed.");
     }
 
@@ -70,12 +70,16 @@ public final class AssistantCoreTest {
             "INCLUDE zrate_top.",
             "PERFORM run IN PROGRAM zrate_runner.",
             "SUBMIT zrate_report.",
-            "CALL TRANSACTION 'EA87'."));
+            "CALL TRANSACTION 'SE38'.",
+            "DATA(lo_helper) = NEW zcl_rate_helper( ).",
+            "zcl_rate_helper=>run( )."));
 
         assertTrue(references.contains("INCLUDE ZRATE_TOP"), "Include references must be detected.");
         assertTrue(references.contains("PERFORM IN PROGRAM ZRATE_RUNNER"), "PERFORM IN PROGRAM references must be detected.");
         assertTrue(references.contains("SUBMIT ZRATE_REPORT"), "SUBMIT references must be detected.");
-        assertTrue(references.contains("CALL TRANSACTION EA87"), "CALL TRANSACTION references must be detected.");
+        assertTrue(references.contains("CALL TRANSACTION SE38"), "CALL TRANSACTION references must be detected.");
+        assertTrue(references.contains("CLASS ZCL_RATE_HELPER"), "Class references must be detected.");
+        assertTrue(extractor.extractNames("INCLUDE zrate_top.\nzcl_rate_helper=>run( ).").contains("ZCL_RATE_HELPER"), "Raw reference names must be available for workspace lookup.");
     }
 
     private static void dotenvLoaderParsesQuotedValues() throws Exception {

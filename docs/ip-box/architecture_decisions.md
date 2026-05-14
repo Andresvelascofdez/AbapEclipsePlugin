@@ -89,3 +89,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: unopened nested includes/programs are not automatically fetched from SAP. The plug-in detects references and can use them when the user opens the related objects as editor tabs.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ADT developers commonly work across a main report and includes or related objects in open editor tabs.
 - Project owner decision: change made in response to owner feedback after testing with an opened Z report.
+
+## ADR-009 - Read-Only Context Snapshot With Local Workspace Related Sources
+
+- Context: the owner requested a more automatic assistant that behaves like a development chat over the available Eclipse working set, including related code where possible.
+- Options considered: keep open-editor-only context, add manual context buttons again, directly fetch remote SAP objects, or build a read-only context snapshot from open editors plus local workspace sources matching detected ABAP references.
+- Selected option: build a context snapshot on each accepted ask request. The snapshot reads open text editors, detects ABAP references, attempts read-only lookup of matching text resources already present in the Eclipse workspace, records unresolved references as TODO/TBC, includes bounded conversation history, and shows a compact summary in the view.
+- Reason for selection: this increases automation without introducing unapproved SAP writes or hidden remote repository access.
+- Expected benefit: fewer manual copy/paste steps, better follow-up questions, clearer visibility of what was sent to the assistant, and safer handling of missing dependencies.
+- Risks/limitations: workspace filename/path matching cannot guarantee complete SAP dependency resolution. Remote objects not open or materialised locally remain unresolved until the user opens or imports them.
+- Relation to SAP/ABAP/Eclipse/ADT use case: ABAP developers often inspect a main object together with includes, function modules, classes or related programs in the same Eclipse workspace.
+- Project owner decision: selected after the owner requested implementation of the first three proposed improvements.

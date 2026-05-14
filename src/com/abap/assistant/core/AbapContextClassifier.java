@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 public final class AbapContextClassifier {
     private static final Pattern CUSTOM_OBJECT = Pattern.compile("\\b[ZY][A-Z0-9_]{2,}\\b|/[A-Z0-9_]+/[A-Z0-9_]+", Pattern.CASE_INSENSITIVE);
-    private static final Pattern STANDARD_HINT = Pattern.compile("\\b(SAP|ABAP|ADT|ISU|FKK|EVER|EANL|EABL|ERCH|BUT000|BAPI_[A-Z0-9_]*|CL_[A-Z0-9_]*|IF_[A-Z0-9_]*)\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern STANDARD_HINT = Pattern.compile("\\b(SAP|ABAP|ADT|BAPI_[A-Z0-9_]*|CL_[A-Z0-9_]*|IF_[A-Z0-9_]*|DD02L|TADIR)\\b", Pattern.CASE_INSENSITIVE);
 
     public PrivacyScope classify(String text) {
         if (text == null || text.isBlank()) {

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.5 - 2026-05-14
+
+- Added automatic related workspace source loading for detected ABAP references when matching text resources already exist in the Eclipse workspace.
+- Extended ABAP reference detection to include common class usages in addition to includes, programs, function modules and transactions.
+- Added bounded conversation history so follow-up questions in the same view can use recent Q/A context.
+- Added a compact context summary showing editor count, related source count, reference count, prompt character count and history turns.
+- Updated README, Eclipse installation/testing guide, Eclipse test plan and IP Box documentation for the new context workflow.
+- Removed documentation references to unrelated tools/projects so the project record remains independent.
+
 ## 0.1.0 - 2026-05-11
 
 - Created the initial Eclipse PDE plug-in scaffold for ABAP Chat Assistant.

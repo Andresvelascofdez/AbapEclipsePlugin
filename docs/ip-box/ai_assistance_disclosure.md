@@ -17,5 +17,12 @@ For the 2026-05-11 initial scaffold, Codex assisted with:
 - Installation/testing documentation.
 - IP Box documentation records.
 
-All AI-generated outputs require project owner review and acceptance before being treated as final.
+For the 2026-05-14 automatic context milestone, Codex assisted with:
 
+- Eclipse context snapshot implementation.
+- ABAP reference extraction improvements.
+- Conversation history and context-summary UI changes.
+- Automated validation execution.
+- Documentation and IP Box record updates.
+
+All AI-generated outputs require project owner review and acceptance before being treated as final.
