@@ -82,10 +82,10 @@ This documentation is a technical development record. It is not legal or tax adv
 ## ADR-008 - Free-Form Chat With Editor Context Instead Of Direct SAP Writes
 
 - Context: the owner requested a more automatic, natural chat workflow that can read opened ABAP code and propose code changes.
-- Options considered: keep mode-only analysis, add free-form chat over copied text, read active/open Eclipse editors, or attempt direct SAP repository edits.
-- Selected option: support free-form questions with active/open editor context loading and provide code suggestions only, leaving all SAP changes for explicit user confirmation/copying.
+- Options considered: keep mode-only analysis, add free-form chat over copied text, require manual context-loading buttons, automatically read all open Eclipse editors, or attempt direct SAP repository edits.
+- Selected option: support free-form questions that automatically include all open Eclipse text editor tabs and provide code suggestions only, leaving all SAP changes for explicit user confirmation/copying.
 - Reason for selection: this improves usability while avoiding unapproved writes to SAP systems and keeping sensitive/custom code boundaries visible.
-- Expected benefit: developers can ask natural questions against the current ABAP editor and receive suggested snippets with less manual copy/paste.
-- Risks/limitations: unopened nested includes/programs are not automatically fetched from SAP. The plug-in detects references and can use them when the user opens the related objects as editor context.
+- Expected benefit: developers can ask natural questions against the currently opened ABAP working set and receive suggested snippets with less manual copy/paste.
+- Risks/limitations: unopened nested includes/programs are not automatically fetched from SAP. The plug-in detects references and can use them when the user opens the related objects as editor tabs.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ADT developers commonly work across a main report and includes or related objects in open editor tabs.
 - Project owner decision: change made in response to owner feedback after testing with an opened Z report.

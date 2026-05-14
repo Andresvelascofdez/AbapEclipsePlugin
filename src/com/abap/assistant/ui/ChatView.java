@@ -18,8 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -31,10 +30,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.jface.text.IDocument;
 
 public final class ChatView extends ViewPart {
     public static final String ID = "com.abap.assistant.ui.ChatView";
@@ -42,11 +39,9 @@ public final class ChatView extends ViewPart {
 
     private Combo modeCombo;
     private Text questionText;
-    private Text contextText;
     private Text outputText;
     private Label statusLabel;
     private Button askButton;
-    private Button useActiveEditorButton;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -60,28 +55,8 @@ public final class ChatView extends ViewPart {
         modeCombo.setLayoutData(fillHorizontal());
 
         Composite actions = new Composite(parent, SWT.NONE);
-        actions.setLayout(new GridLayout(6, false));
+        actions.setLayout(new GridLayout(1, false));
         actions.setLayoutData(fillHorizontal());
-
-        Button loadSelectionButton = new Button(actions, SWT.PUSH);
-        loadSelectionButton.setText("Load Selection");
-        loadSelectionButton.addListener(SWT.Selection, event -> loadActiveSelection());
-
-        Button loadEditorButton = new Button(actions, SWT.PUSH);
-        loadEditorButton.setText("Load Editor");
-        loadEditorButton.addListener(SWT.Selection, event -> loadActiveEditor());
-
-        Button loadOpenEditorsButton = new Button(actions, SWT.PUSH);
-        loadOpenEditorsButton.setText("Load Open Editors");
-        loadOpenEditorsButton.addListener(SWT.Selection, event -> loadOpenEditors());
-
-        Button clearButton = new Button(actions, SWT.PUSH);
-        clearButton.setText("Clear");
-        clearButton.addListener(SWT.Selection, event -> clearConversation());
-
-        useActiveEditorButton = new Button(actions, SWT.CHECK);
-        useActiveEditorButton.setText("Use active editor");
-        useActiveEditorButton.setSelection(true);
 
         askButton = new Button(actions, SWT.PUSH);
         askButton.setText("Ask");
@@ -92,21 +67,14 @@ public final class ChatView extends ViewPart {
         questionLabel.setLayoutData(fillHorizontal());
 
         questionText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-        questionText.setLayoutData(fillBoth(70));
-
-        Label contextLabel = new Label(parent, SWT.NONE);
-        contextLabel.setText("Context");
-        contextLabel.setLayoutData(fillHorizontal());
-
-        contextText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-        contextText.setLayoutData(fillBoth(170));
+        questionText.setLayoutData(fillBoth(100));
 
         outputText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-        outputText.setLayoutData(fillBoth(220));
+        outputText.setLayoutData(fillBoth(320));
 
         statusLabel = new Label(parent, SWT.NONE);
         statusLabel.setLayoutData(fillHorizontal());
-        setStatus("Ready");
+        setStatus("Ready - open editors are read automatically");
     }
 
     @Override
@@ -114,79 +82,13 @@ public final class ChatView extends ViewPart {
         questionText.setFocus();
     }
 
-    private void loadActiveSelection() {
-        IEditorPart editor = getSite().getPage().getActiveEditor();
-        ISelectionService selectionService = getSite().getWorkbenchWindow().getSelectionService();
-        ISelection selection = editor == null || editor.getSite().getSelectionProvider() == null
-            ? selectionService.getSelection()
-            : editor.getSite().getSelectionProvider().getSelection();
-
-        if (selection instanceof ITextSelection && !((ITextSelection) selection).getText().isBlank()) {
-            ITextSelection textSelection = (ITextSelection) selection;
-            contextText.setText(trimContext(formatEditorContext(editor, textSelection.getText())));
-            setStatus("Selection loaded");
-        } else {
-            setStatus("No text selection found");
-        }
-    }
-
-    private void loadActiveEditor() {
-        EditorContext context = readActiveEditor();
-        if (context == null) {
-            setStatus("No active text editor found");
-            return;
-        }
-
-        contextText.setText(trimContext(context.format()));
-        setStatus("Active editor loaded - " + context.title());
-    }
-
-    private void loadOpenEditors() {
-        List<EditorContext> contexts = new ArrayList<>();
-        for (IEditorReference reference : getSite().getPage().getEditorReferences()) {
-            IEditorPart editor = reference.getEditor(false);
-            EditorContext context = readEditor(editor);
-            if (context != null && !context.text().isBlank()) {
-                contexts.add(context);
-            }
-        }
-
-        if (contexts.isEmpty()) {
-            setStatus("No open text editors found");
-            return;
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (EditorContext context : contexts) {
-            if (builder.length() > 0) {
-                builder.append(System.lineSeparator()).append(System.lineSeparator());
-            }
-            builder.append(context.format());
-        }
-        contextText.setText(trimContext(builder.toString()));
-        setStatus("Open editors loaded - " + contexts.size());
-    }
-
-    private void clearConversation() {
-        questionText.setText("");
-        contextText.setText("");
-        outputText.setText("");
-        setStatus("Ready");
-    }
-
     private void askAssistant() {
         String question = questionText.getText();
-        String context = contextText.getText();
-        if (useActiveEditorButton.getSelection()) {
-            EditorContext editorContext = readActiveEditor();
-            if (editorContext != null && !editorContext.text().isBlank()) {
-                context = trimContext(editorContext.format());
-                contextText.setText(context);
-            }
-        }
+        List<EditorContext> editorContexts = readOpenEditors();
+        String context = trimContext(formatEditorContexts(editorContexts));
 
         if ((question == null || question.isBlank()) && (context == null || context.isBlank())) {
-            setStatus("Enter a question or load editor context first");
+            setStatus("Enter a question or open an ABAP/text editor first");
             return;
         }
 
@@ -194,7 +96,7 @@ public final class ChatView extends ViewPart {
         AssistantRequest request = new AssistantRequest(mode, question, context);
         setBusy(true);
         outputText.setText("");
-        setStatus("Calling OpenAI");
+        setStatus("Calling OpenAI - " + editorContexts.size() + " open editor(s)");
 
         Job job = new Job("ABAP Chat Assistant request") {
             @Override
@@ -235,16 +137,10 @@ public final class ChatView extends ViewPart {
         askButton.setEnabled(!busy);
         modeCombo.setEnabled(!busy);
         questionText.setEnabled(!busy);
-        contextText.setEnabled(!busy);
-        useActiveEditorButton.setEnabled(!busy);
     }
 
     private void setStatus(String value) {
         statusLabel.setText(value == null ? "" : value);
-    }
-
-    private EditorContext readActiveEditor() {
-        return readEditor(getSite().getPage().getActiveEditor());
     }
 
     private EditorContext readEditor(IEditorPart editor) {
@@ -276,9 +172,53 @@ public final class ChatView extends ViewPart {
         return null;
     }
 
-    private String formatEditorContext(IEditorPart editor, String text) {
-        String title = editor == null ? "selection" : editor.getTitle();
-        return new EditorContext(title, text).format();
+    private List<EditorContext> readOpenEditors() {
+        List<EditorContext> contexts = new ArrayList<>();
+        IEditorPart activeEditor = getSite().getPage().getActiveEditor();
+        EditorContext activeContext = readEditor(activeEditor);
+        if (activeContext != null) {
+            contexts.add(activeContext);
+        }
+
+        for (IEditorReference reference : getSite().getPage().getEditorReferences()) {
+            IEditorPart editor = reference.getEditor(false);
+            if (editor == null) {
+                editor = reference.getEditor(true);
+            }
+            if (editor == activeEditor) {
+                continue;
+            }
+
+            EditorContext context = readEditor(editor);
+            if (context != null && !containsTitle(contexts, context.title())) {
+                contexts.add(context);
+            }
+        }
+        return contexts;
+    }
+
+    private static boolean containsTitle(List<EditorContext> contexts, String title) {
+        for (EditorContext context : contexts) {
+            if (context.title().equals(title)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String formatEditorContexts(List<EditorContext> contexts) {
+        if (contexts == null || contexts.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (EditorContext context : contexts) {
+            if (builder.length() > 0) {
+                builder.append(System.lineSeparator()).append(System.lineSeparator());
+            }
+            builder.append(context.format());
+        }
+        return builder.toString();
     }
 
     private static String trimContext(String context) {

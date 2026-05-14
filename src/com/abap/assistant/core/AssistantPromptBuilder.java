@@ -30,6 +30,7 @@ public final class AssistantPromptBuilder {
             "- If a conclusion is uncertain, include a TODO/TBC note instead of making unsupported claims.",
             "- Prefer safe, incremental ABAP or ADT guidance that preserves existing behaviour.",
             "- The user can ask in free text. Answer naturally, but stay precise and technical.",
+            "- The editor context may contain every open Eclipse editor tab, not only the visible one.",
             "- If the user asks for code, provide ABAP snippets or patch-style suggestions only; do not claim that code was applied in SAP.",
             "- If related includes, submitted programs, function modules or transactions are referenced but their source is not provided, list them as additional context needed.",
             "",

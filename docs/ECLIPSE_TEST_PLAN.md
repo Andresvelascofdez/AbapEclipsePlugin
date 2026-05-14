@@ -109,8 +109,7 @@ After automated tests pass:
 - Run `Project > Clean`.
 - Launch `Run As > Eclipse Application`.
 - Confirm `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat` opens.
-- Test `Load Selection` with an anonymised ABAP snippet.
-- Test `Load Editor` with an opened ABAP editor.
-- Test `Load Open Editors` after opening a main program plus any includes or related objects you want to provide as context.
+- Test `Ask` with one anonymised ABAP editor open and confirm the response refers to that code.
+- Test `Ask` with a main program plus includes or related objects opened in separate editor tabs and confirm the response uses the open-tab context.
 - Test a free-form question that asks for ABAP code suggestions and confirm the response provides suggested snippets only.
 - Test `Ask` only after configuring a local `.env` with a valid, non-committed OpenAI API key.

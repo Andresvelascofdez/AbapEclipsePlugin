@@ -8,7 +8,7 @@ The project is designed, directed, reviewed and validated by the project owner, 
 
 - Eclipse view contribution: `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
 - Free-form ABAP chat with optional task modes for explaining ABAP, finding possible defects, suggesting tests, proposing safe refactoring ideas, and general ABAP/ADT help.
-- Text selection, full active editor, and open-editor context loading from Eclipse.
+- Automatic context loading from every open Eclipse text editor tab when `Ask` is pressed.
 - Related ABAP reference detection for includes, submitted programs, function modules and transactions present in the loaded context.
 - Sensitive value redaction for OpenAI-style API keys, ticket references, handover references, invoice references, email addresses, and SAP client numbers.
 - Context classification to keep SAP standard/public knowledge separate from client-specific Z/Y/private knowledge.

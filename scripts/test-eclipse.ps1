@@ -28,7 +28,7 @@ $sourcesFile = Join-Path $buildRoot "sources.txt"
 $smokeSourcesFile = Join-Path $buildRoot "smoke-sources.txt"
 $marker = Join-Path $buildRoot "marker.txt"
 $envProjectRoot = Join-Path $buildRoot "env-project"
-$productJar = Join-Path $dropins "com.abap.assistant_0.1.2.jar"
+$productJar = Join-Path $dropins "com.abap.assistant_0.1.3.jar"
 $smokeJar = Join-Path $dropins "com.abap.assistant.smoke_0.1.0.jar"
 $expectedApiKey = if ($UseBundleEnv) { "smoke-bundle-key" } else { "smoke-test-key" }
 
