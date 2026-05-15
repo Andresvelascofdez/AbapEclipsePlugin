@@ -1,5 +1,11 @@
 # Changelog
 
+## Documentation - 2026-05-15
+
+- Removed obsolete IP Box contribution/disclosure records from the documentation set.
+- Refocused the IP Box folder on product evidence: development history, architecture decisions, feature register, validation log and evidence register.
+- Updated `instrucciones.md`, development log, evidence register and validation log so the record reads as a technical product dossier rather than an authorship/tooling dossier.
+
 ## 0.1.5 - 2026-05-14
 
 - Added automatic related workspace source loading for detected ABAP references when matching text resources already exist in the Eclipse workspace.
