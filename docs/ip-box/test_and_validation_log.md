@@ -119,3 +119,16 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: `IFileEditorInput` was not available to the PDE project with current dependencies; fixed by using the editor input adapter path already supported by the bundle dependencies.
 - Follow-up required: manual UI validation with real ADT open editors remains TODO/TBC.
 - Reviewer/validator: local automated validation; manual UI validation TODO/TBC.
+
+## 2026-05-15 - ABAP Dependency, Risk And Review Validation
+
+- Tested feature: ABAP dependency analyzer, ABAP risk signal analyzer, prompt dependency/risk summary, suggested change review model and Eclipse dependency/context/review panel compilation.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Expected result: core tests detect ABAP references, custom/Z objects, risk signals, prompt summary content and safe suggested-change headers; Eclipse imports/builds the project without Java or PDE markers; clean Eclipse runtime opens `ABAP Chat`.
+- Actual result: all three commands passed.
+- Status: Passed.
+- Issues found: initial risk detection did not catch variable names such as `lv_password`; the pattern was corrected and tests passed.
+- Follow-up required: manual Eclipse UI validation of the dependency/context summary panel and copy-only suggested change panel remains TODO/TBC.
+- Reviewer/validator: local automated validation.

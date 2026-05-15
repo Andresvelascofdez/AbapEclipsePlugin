@@ -9,8 +9,10 @@ This plan defines the validation required before confirming that ABAP Chat Assis
 - Current UI model: free-form question box, response panel, compact context summary and status line.
 - Current context model: every open Eclipse text editor tab is read automatically when `Ask` is pressed.
 - Related context model: detected ABAP references are matched against text resources already present in the local Eclipse workspace and included when found.
+- Local analysis model: dependency and risk analyzers inspect ABAP text before prompt construction.
 - Conversation model: recent Q/A turns in the same view session are sent as bounded history.
 - Current write model: suggested ABAP code is text only; the plug-in does not write to SAP.
+- Review model: fenced ABAP suggestions are copied into a review panel with a manual-review header and copy-only button.
 
 ## Automated Tests
 
@@ -26,6 +28,7 @@ Expected result:
 - Core tests pass.
 - Free-chat prompt rules are validated.
 - Related ABAP references are detected, including includes, programs, function modules, transactions and classes.
+- ABAP risk signals are detected, including `SELECT` inside `LOOP`, commits/rollbacks, BDC, update task usage, database writes, custom table access and hardcoded sensitive values.
 - Raw reference names are available for workspace lookup.
 - `plugin.xml` exposes `com.abap.assistant.ui.ChatView`.
 - `MANIFEST.MF` exposes `com.abap.assistant`.
@@ -113,6 +116,7 @@ Expected result:
 
 - The question box clears after pressing `Ask`.
 - The context summary says one editor was sent.
+- The dependency/context summary panel is visible.
 - The response refers to the opened program.
 - The response does not claim to modify SAP.
 
@@ -130,6 +134,7 @@ Expected result:
 
 - The question box clears after pressing `Ask`.
 - The context summary shows the number of open editors.
+- The dependency/context summary lists detected references, unresolved references, custom/Z objects and risk signals when present.
 - The response uses the main program and open related objects.
 - Missing references are treated as TODO/TBC.
 
@@ -175,12 +180,30 @@ Suggest a safe ABAP change for this code. Return only code I can review manually
 Expected result:
 
 - The response may include fenced ABAP code.
-- The response does not say the change was applied.
+- The review panel shows a suggested block when fenced ABAP code is present.
+- `Copy suggestion` copies text with a manual-review header.
+- The response and review panel do not say the change was applied.
 - The user remains responsible for copying, reviewing and activating code in SAP.
 
 ### Privacy
 
 Use anonymised placeholders only. If a test snippet contains ticket-like values or emails, confirm the response uses anonymised placeholders such as `TCKXXXXX` or `user@example.invalid`.
+
+### Dependency/Risk Summary Panel
+
+1. Open a non-confidential ABAP sample containing an include, a function module call, a custom table select and one safe test risk signal such as `COMMIT WORK`.
+2. Ask:
+
+```text
+Summarize the local dependency and risk findings before giving advice.
+```
+
+Expected result:
+
+- The summary panel shows non-zero reference and risk counts.
+- Custom/Z objects are listed when present.
+- Unresolved references are listed as TODO/TBC context unless already open or available as local workspace text resources.
+- No full ABAP source is written to logs by this panel.
 
 ## Known Limits
 

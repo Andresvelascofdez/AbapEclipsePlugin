@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import com.abap.assistant.core.AbapAnalysisResult;
 import com.abap.assistant.core.AbapContextClassifier;
-import com.abap.assistant.core.AbapReferenceExtractor;
+import com.abap.assistant.core.AbapDependencyAnalyzer;
 import com.abap.assistant.core.AssistantMode;
 import com.abap.assistant.core.AssistantPromptBuilder;
 import com.abap.assistant.core.AssistantRequest;
@@ -20,6 +21,8 @@ import com.abap.assistant.core.AssistantService;
 import com.abap.assistant.core.OpenAiResponsesClient;
 import com.abap.assistant.core.OpenAiSettings;
 import com.abap.assistant.core.SensitiveDataRedactor;
+import com.abap.assistant.core.SuggestedChangeReview;
+import com.abap.assistant.core.SuggestedChangeReviewBuilder;
 import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 
 import org.eclipse.core.resources.IContainer;
@@ -33,6 +36,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -58,10 +64,14 @@ public final class ChatView extends ViewPart {
     private Text questionText;
     private Text outputText;
     private Label statusLabel;
-    private Label contextSummaryLabel;
+    private Text contextSummaryText;
+    private Text reviewText;
     private Button askButton;
-    private final AbapReferenceExtractor referenceExtractor = new AbapReferenceExtractor();
+    private Button copySuggestionButton;
+    private final AbapDependencyAnalyzer dependencyAnalyzer = new AbapDependencyAnalyzer();
+    private final SuggestedChangeReviewBuilder reviewBuilder = new SuggestedChangeReviewBuilder();
     private final List<ConversationTurn> conversationHistory = new ArrayList<>();
+    private String lastSuggestionText = "";
 
     @Override
     public void createPartControl(Composite parent) {
@@ -75,12 +85,17 @@ public final class ChatView extends ViewPart {
         modeCombo.setLayoutData(fillHorizontal());
 
         Composite actions = new Composite(parent, SWT.NONE);
-        actions.setLayout(new GridLayout(1, false));
+        actions.setLayout(new GridLayout(2, false));
         actions.setLayoutData(fillHorizontal());
 
         askButton = new Button(actions, SWT.PUSH);
         askButton.setText("Ask");
         askButton.addListener(SWT.Selection, event -> askAssistant());
+
+        copySuggestionButton = new Button(actions, SWT.PUSH);
+        copySuggestionButton.setText("Copy suggestion");
+        copySuggestionButton.setEnabled(false);
+        copySuggestionButton.addListener(SWT.Selection, event -> copySuggestion());
 
         Label questionLabel = new Label(parent, SWT.NONE);
         questionLabel.setText("Question");
@@ -89,12 +104,16 @@ public final class ChatView extends ViewPart {
         questionText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         questionText.setLayoutData(fillBoth(100));
 
-        outputText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-        outputText.setLayoutData(fillBoth(320));
-
-        contextSummaryLabel = new Label(parent, SWT.NONE);
-        contextSummaryLabel.setLayoutData(fillHorizontal());
+        contextSummaryText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+        contextSummaryText.setLayoutData(fillBoth(120));
         setContextSummary("Context: open ABAP/text editors will be read when you ask.");
+
+        outputText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+        outputText.setLayoutData(fillBoth(250));
+
+        reviewText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+        reviewText.setLayoutData(fillBoth(130));
+        reviewText.setText("Suggested change review: no suggestion yet.");
 
         statusLabel = new Label(parent, SWT.NONE);
         statusLabel.setLayoutData(fillHorizontal());
@@ -119,7 +138,9 @@ public final class ChatView extends ViewPart {
         AssistantMode mode = AssistantMode.values()[Math.max(0, modeCombo.getSelectionIndex())];
         AssistantRequest request = new AssistantRequest(mode, question, context);
         questionText.setText("");
-        setContextSummary(snapshot.summary(conversationHistory.size()));
+        setContextSummary(snapshot.summaryPanel(conversationHistory.size()));
+        lastSuggestionText = "";
+        reviewText.setText("Suggested change review: waiting for response.");
         setBusy(true);
         outputText.setText("");
         setStatus("Calling OpenAI - " + snapshot.openEditorCount() + " editor(s), "
@@ -135,8 +156,11 @@ public final class ChatView extends ViewPart {
                     AssistantResponse response = service.answer(request);
                     updateUi(() -> {
                         outputText.setText(response.text());
+                        SuggestedChangeReview review = reviewBuilder.build(snapshot.originalExcerpt(), response.text());
+                        lastSuggestionText = review.copyText();
+                        reviewText.setText(review.displayText());
                         addConversationTurn(question, response.text());
-                        setContextSummary(snapshot.summary(conversationHistory.size()));
+                        setContextSummary(snapshot.summaryPanel(conversationHistory.size()));
                         setStatus("Done - " + response.privacyScope());
                         setBusy(false);
                     });
@@ -166,10 +190,27 @@ public final class ChatView extends ViewPart {
         askButton.setEnabled(!busy);
         modeCombo.setEnabled(!busy);
         questionText.setEnabled(!busy);
+        contextSummaryText.setEnabled(!busy);
+        reviewText.setEnabled(!busy);
+        copySuggestionButton.setEnabled(!busy && lastSuggestionText != null && !lastSuggestionText.isBlank());
     }
 
     private void setStatus(String value) {
         statusLabel.setText(value == null ? "" : value);
+    }
+
+    private void copySuggestion() {
+        if (lastSuggestionText == null || lastSuggestionText.isBlank()) {
+            setStatus("No suggested code block available to copy");
+            return;
+        }
+        Clipboard clipboard = new Clipboard(getSite().getShell().getDisplay());
+        try {
+            clipboard.setContents(new Object[] { lastSuggestionText }, new Transfer[] { TextTransfer.getInstance() });
+            setStatus("Suggested block copied for manual review");
+        } finally {
+            clipboard.dispose();
+        }
     }
 
     private EditorContext readEditor(IEditorPart editor) {
@@ -209,12 +250,13 @@ public final class ChatView extends ViewPart {
 
     private ContextSnapshot buildContextSnapshot() {
         List<EditorContext> openEditors = readOpenEditors();
-        List<String> detectedReferences = referenceExtractor.extractNames(formatEditorContexts(openEditors));
-        List<EditorContext> relatedContexts = resolveRelatedWorkspaceSources(openEditors, detectedReferences);
+        AbapAnalysisResult openEditorAnalysis = dependencyAnalyzer.analyze(combinedText(openEditors));
+        List<EditorContext> relatedContexts = resolveRelatedWorkspaceSources(openEditors, openEditorAnalysis.referenceNames());
         List<EditorContext> allResolvedContexts = new ArrayList<>(openEditors);
         allResolvedContexts.addAll(relatedContexts);
-        List<String> unresolvedReferences = unresolvedReferences(detectedReferences, allResolvedContexts);
-        return new ContextSnapshot(openEditors, relatedContexts, detectedReferences, unresolvedReferences);
+        AbapAnalysisResult analysis = dependencyAnalyzer.analyze(combinedText(allResolvedContexts));
+        List<String> unresolvedReferences = unresolvedReferences(analysis.referenceNames(), allResolvedContexts);
+        return new ContextSnapshot(openEditors, relatedContexts, analysis, unresolvedReferences);
     }
 
     private List<EditorContext> readOpenEditors() {
@@ -429,6 +471,22 @@ public final class ChatView extends ViewPart {
         return builder.toString();
     }
 
+    private static String combinedText(List<EditorContext> contexts) {
+        if (contexts == null || contexts.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (EditorContext context : contexts) {
+            if (builder.length() > 0) {
+                builder.append(System.lineSeparator()).append(System.lineSeparator());
+            }
+            builder.append(context.title()).append(System.lineSeparator());
+            builder.append(context.text());
+        }
+        return builder.toString();
+    }
+
     private String formatConversationHistory() {
         if (conversationHistory.isEmpty()) {
             return "";
@@ -477,7 +535,7 @@ public final class ChatView extends ViewPart {
     }
 
     private void setContextSummary(String value) {
-        contextSummaryLabel.setText(value == null ? "" : value);
+        contextSummaryText.setText(value == null ? "" : value);
     }
 
     private static GridData fillHorizontal() {
@@ -511,6 +569,10 @@ public final class ChatView extends ViewPart {
 
         private IFile file() {
             return file;
+        }
+
+        private String text() {
+            return text;
         }
 
         private String fingerprint() {
@@ -548,17 +610,17 @@ public final class ChatView extends ViewPart {
     private static final class ContextSnapshot {
         private final List<EditorContext> openEditors;
         private final List<EditorContext> relatedContexts;
-        private final List<String> detectedReferences;
+        private final AbapAnalysisResult analysis;
         private final List<String> unresolvedReferences;
 
         private ContextSnapshot(
             List<EditorContext> openEditors,
             List<EditorContext> relatedContexts,
-            List<String> detectedReferences,
+            AbapAnalysisResult analysis,
             List<String> unresolvedReferences) {
             this.openEditors = openEditors;
             this.relatedContexts = relatedContexts;
-            this.detectedReferences = detectedReferences;
+            this.analysis = analysis;
             this.unresolvedReferences = unresolvedReferences;
         }
 
@@ -574,39 +636,58 @@ public final class ChatView extends ViewPart {
             StringBuilder builder = new StringBuilder();
             appendSection(builder, "Open editor context", formatEditorContexts(openEditors));
             appendSection(builder, "Related workspace sources", formatEditorContexts(relatedContexts));
-            appendDetectedReferences(builder);
+            appendSection(builder, "Local ABAP dependency and risk summary", analysis.summaryText(unresolvedReferences));
             appendSection(builder, "Recent conversation history", history);
             return trimContext(builder.toString());
         }
 
-        private String summary(int historyTurns) {
-            int characters = formatEditorContexts(openEditors).length() + formatEditorContexts(relatedContexts).length();
-            return "Context: " + openEditors.size() + " editor(s), "
-                + relatedContexts.size() + " related source(s), "
-                + detectedReferences.size() + " reference(s), "
-                + characters + " char(s), history " + historyTurns + " turn(s).";
+        private String originalExcerpt() {
+            return combinedText(openEditors);
         }
 
-        private void appendDetectedReferences(StringBuilder builder) {
-            if (detectedReferences.isEmpty() && unresolvedReferences.isEmpty()) {
+        private String summaryPanel(int historyTurns) {
+            int characters = formatEditorContexts(openEditors).length() + formatEditorContexts(relatedContexts).length();
+            StringBuilder builder = new StringBuilder();
+            builder.append("Context summary:").append(System.lineSeparator());
+            builder.append("- Open editors: ").append(openEditors.size()).append(System.lineSeparator());
+            builder.append("- Related local sources: ").append(relatedContexts.size()).append(System.lineSeparator());
+            builder.append("- References detected: ").append(analysis.references().size()).append(System.lineSeparator());
+            builder.append("- Unresolved references: ").append(unresolvedReferences.size()).append(System.lineSeparator());
+            builder.append("- Custom/Z objects: ").append(analysis.customReferences().size()).append(System.lineSeparator());
+            builder.append("- Risk signals: ").append(analysis.riskSignals().size()).append(System.lineSeparator());
+            builder.append("- Context characters: ").append(characters).append(System.lineSeparator());
+            builder.append("- History turns: ").append(historyTurns);
+            appendRiskSignals(builder);
+            appendUnresolved(builder);
+            appendCustomObjects(builder);
+            return builder.toString();
+        }
+
+        private void appendRiskSignals(StringBuilder builder) {
+            if (analysis.riskSignals().isEmpty()) {
                 return;
             }
-            StringBuilder section = new StringBuilder();
-            if (!detectedReferences.isEmpty()) {
-                section.append("Detected ABAP references:").append(System.lineSeparator());
-                for (String reference : detectedReferences) {
-                    section.append("- ").append(reference).append(System.lineSeparator());
-                }
+            builder.append(System.lineSeparator()).append(System.lineSeparator()).append("Risk signals:").append(System.lineSeparator());
+            analysis.riskSignals().stream().limit(8).forEach(signal ->
+                builder.append("- ").append(signal.display()).append(System.lineSeparator()));
+        }
+
+        private void appendUnresolved(StringBuilder builder) {
+            if (unresolvedReferences.isEmpty()) {
+                return;
             }
-            if (!unresolvedReferences.isEmpty()) {
-                section.append(System.lineSeparator())
-                    .append("References not loaded from the local Eclipse workspace; treat them as TODO/TBC unless present in another open editor:")
-                    .append(System.lineSeparator());
-                for (String reference : unresolvedReferences) {
-                    section.append("- ").append(reference).append(System.lineSeparator());
-                }
+            builder.append(System.lineSeparator()).append("Unresolved:").append(System.lineSeparator());
+            unresolvedReferences.stream().limit(8).forEach(reference ->
+                builder.append("- ").append(reference).append(System.lineSeparator()));
+        }
+
+        private void appendCustomObjects(StringBuilder builder) {
+            if (analysis.customReferences().isEmpty()) {
+                return;
             }
-            appendSection(builder, "Reference summary", section.toString());
+            builder.append(System.lineSeparator()).append("Custom/Z objects:").append(System.lineSeparator());
+            analysis.customReferences().stream().limit(8).forEach(reference ->
+                builder.append("- ").append(reference.display()).append(System.lineSeparator()));
         }
 
         private static void appendSection(StringBuilder builder, String title, String content) {

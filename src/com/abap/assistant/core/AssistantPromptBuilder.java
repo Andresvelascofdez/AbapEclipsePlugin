@@ -3,12 +3,12 @@ package com.abap.assistant.core;
 public final class AssistantPromptBuilder {
     private final SensitiveDataRedactor redactor;
     private final AbapContextClassifier classifier;
-    private final AbapReferenceExtractor referenceExtractor;
+    private final AbapDependencyAnalyzer dependencyAnalyzer;
 
     public AssistantPromptBuilder(SensitiveDataRedactor redactor, AbapContextClassifier classifier) {
         this.redactor = redactor;
         this.classifier = classifier;
-        this.referenceExtractor = new AbapReferenceExtractor();
+        this.dependencyAnalyzer = new AbapDependencyAnalyzer();
     }
 
     public BuiltPrompt build(AssistantRequest request) {
@@ -17,7 +17,8 @@ public final class AssistantPromptBuilder {
         String redactedCode = redactor.redact(request.selectedCode());
         PrivacyScope privacyScope = classifier.classify(original);
         boolean redacted = !original.equals(redactor.redact(original));
-        String detectedReferences = formatReferences(referenceExtractor.extract(redactedCode));
+        AbapAnalysisResult analysis = dependencyAnalyzer.analyze(redactedCode);
+        String detectedReferences = formatReferences(analysis.references());
 
         String template = String.join(System.lineSeparator(),
             "You are ABAP Chat Assistant, helping with SAP ABAP and Eclipse ADT work.",
@@ -43,6 +44,9 @@ public final class AssistantPromptBuilder {
             "ABAP or Eclipse editor context:",
             "%s",
             "",
+            "Local ABAP dependency and risk analysis:",
+            "%s",
+            "",
             "Detected related ABAP references in provided context:",
             "%s",
             "",
@@ -56,19 +60,20 @@ public final class AssistantPromptBuilder {
             privacyScope,
             blankFallback(redactedQuestion),
             blankFallback(redactedCode),
+            blankFallback(analysis.summaryText()),
             blankFallback(detectedReferences));
 
         return new BuiltPrompt(prompt.strip(), privacyScope, redacted);
     }
 
-    private static String formatReferences(java.util.List<String> references) {
+    private static String formatReferences(java.util.List<AbapObjectReference> references) {
         if (references == null || references.isEmpty()) {
             return "";
         }
 
         StringBuilder builder = new StringBuilder();
-        for (String reference : references) {
-            builder.append("- ").append(reference).append(System.lineSeparator());
+        for (AbapObjectReference reference : references) {
+            builder.append("- ").append(reference.display()).append(System.lineSeparator());
         }
         return builder.toString().strip();
     }

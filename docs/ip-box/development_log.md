@@ -90,3 +90,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Validation status: core validation, clean Eclipse runtime smoke test, Eclipse import/build smoke test, runtime `.env` smoke test, persisted-workspace smoke test and live OpenAI smoke test passed on 2026-05-14.
 - Open limitations: related-source lookup is read-only and limited to text resources already available in the Eclipse workspace. It does not fetch remote SAP repository objects that are not open or materialised locally.
 - Product decision/review notes: the product record now focuses on technical evolution, architecture, validation and business purpose, without separate authorship/tooling narratives.
+
+## 2026-05-15 - ABAP Dependency, Risk And Review Layer
+
+- Feature/module worked on: technical IP dossier, ABAP dependency analyzer, ABAP risk analyzer, prompt construction, Eclipse context summary panel and suggested change review panel.
+- Technical objective: strengthen the product's proprietary ABAP/Eclipse context layer before model calls, provide review-only suggested change handling and create a clearer technical IP evidence record.
+- Implementation summary: added `technical_ip_dossier.md`; added structured ABAP object/risk model classes; implemented local dependency detection for includes, forms, programs, function modules, transactions, classes, methods and table references; implemented local risk signal detection; added dependency/risk summary to prompt construction; replaced the one-line context label with a read-only dependency/context summary panel; added a copy-only suggested change review panel with manual-review header generation.
+- Files changed: `src/com/abap/assistant/core/AbapDependencyAnalyzer.java`, `AbapAnalysisResult.java`, `AbapObjectReference.java`, `AbapObjectType.java`, `AbapRiskAnalyzer.java`, `AbapRiskSignal.java`, `SafeChangeRules.java`, `SuggestedChangeReview.java`, `SuggestedChangeReviewBuilder.java`, `AssistantPromptBuilder.java`, `src/com/abap/assistant/ui/ChatView.java`, `test/com/abap/assistant/core/AssistantCoreTest.java`, `README.md`, `CHANGELOG.md`, `docs/ip-box/**`.
+- User/business reason: evolve the plug-in from a simple chat wrapper into a more defensible ABAP/Eclipse productivity product with its own context engine, safety controls and validation evidence.
+- Validation status: local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`.
+- Open limitations: dependency/risk analysis is static and conservative; review panel extracts only the first fenced ABAP code block; remote ADT object lookup, richer side-by-side diff view and local usage/evidence logging remain planned/TBC.
+- Product decision/review notes: the local ABAP analysis layer remains read-only, performs no SAP writes and supports human review of suggested changes.

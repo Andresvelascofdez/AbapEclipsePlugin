@@ -137,8 +137,10 @@ La vista actual tiene:
 - selector de modo
 - boton `Ask`
 - caja `Question`
+- resumen de dependencias/contexto
 - panel de respuesta
-- resumen compacto de contexto
+- panel `Suggested change review`
+- boton `Copy suggestion`
 - estado inferior
 
 No hay botones de carga manual ni caja visible de contexto.
@@ -151,10 +153,13 @@ Flujo:
 4. Pulsa `Ask`.
 5. La caja `Question` se limpia inmediatamente.
 6. El plug-in lee automaticamente todos los editores de texto abiertos, tanto la pestana visible como las pestanas abiertas en segundo plano.
-7. El plug-in detecta referencias ABAP y carga ficheros de texto relacionados cuando coinciden con recursos ya disponibles en el workspace.
-8. La vista muestra un resumen: editores, fuentes relacionadas, referencias, caracteres e historial.
-9. La respuesta aparece en el panel inferior.
-10. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
+7. El plug-in detecta referencias ABAP, objetos Z/custom y senales de riesgo locales antes de construir el prompt.
+8. El plug-in carga ficheros de texto relacionados cuando coinciden con recursos ya disponibles en el workspace.
+9. La vista muestra un resumen: editores, fuentes relacionadas, referencias, referencias no resueltas, objetos Z/custom, senales de riesgo, caracteres e historial.
+10. La respuesta aparece en el panel inferior.
+11. Si la respuesta contiene un bloque ABAP, el panel `Suggested change review` muestra una propuesta con cabecera de revision manual.
+12. `Copy suggestion` copia la propuesta; no escribe ni activa nada en SAP.
+13. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
 
 Ejemplos de preguntas:
 
@@ -179,6 +184,7 @@ Lee automaticamente:
 - programas/includes/clases abiertos en pestanas de Eclipse
 - ficheros de texto relacionados ya presentes en el workspace local cuando su nombre/ruta coincide con referencias detectadas
 - historial reciente de preguntas y respuestas de la misma vista
+- resumen local de dependencias y senales de riesgo
 
 No lee automaticamente:
 
@@ -255,6 +261,8 @@ Sugiere un cambio ABAP seguro. Devuelve solo codigo para revisar manualmente.
 Resultado esperado:
 
 - Puede devolver codigo ABAP.
+- El panel `Suggested change review` muestra el bloque si la respuesta lo devuelve en formato fenced code.
+- `Copy suggestion` copia texto con cabecera de revision manual.
 - No dice que lo haya aplicado.
 - El usuario decide si copia, adapta y activa el cambio.
 
@@ -264,4 +272,5 @@ Resultado esperado:
 - La UI antigua sigue apareciendo: reinstala/exporta el jar nuevo y reinicia Eclipse con `-clean`.
 - `Compliance level '11' is incompatible with target level '21'`: confirma `JavaSE-11` en `.classpath` y `javacSource = 11` / `javacTarget = 11` en `build.properties`; luego ejecuta `Project > Clean`.
 - La respuesta ignora una dependencia: abre esa dependencia como pestana o confirma que existe como fichero de texto en el workspace local.
+- El resumen muestra falsos positivos: recuerda que el analisis es estatico y conservador; usa el resultado como ayuda de revision, no como prueba final de comportamiento runtime.
 - Error HTTP de OpenAI: revisa la clave, el modelo y conectividad.

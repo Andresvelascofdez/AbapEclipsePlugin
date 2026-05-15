@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.6 - 2026-05-15
+
+- Added a technical IP dossier focused on product architecture, owned software boundaries, evidence model and roadmap.
+- Added a local ABAP dependency analyzer for includes, forms, programs, function modules, transactions, classes, methods and table references.
+- Added a local ABAP risk analyzer for common review signals such as `SELECT` inside `LOOP`, commits/rollbacks, BDC, update task usage, database writes, custom table access, authority checks, lock handling and hardcoded sensitive values.
+- Changed prompt construction to include local ABAP dependency/risk analysis before model calls.
+- Changed the Eclipse context summary from a single-line label to a compact read-only dependency/context panel.
+- Added an initial suggested change review panel with manual-review header generation and copy-only workflow for fenced ABAP suggestions.
+- Updated tests and product evidence documentation for the new ABAP analysis layer.
+
 ## Documentation - 2026-05-15
 
 - Removed obsolete IP Box contribution/disclosure records from the documentation set.

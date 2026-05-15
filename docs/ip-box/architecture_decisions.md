@@ -100,3 +100,25 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: workspace filename/path matching cannot guarantee complete SAP dependency resolution. Remote objects not open or materialised locally remain unresolved until the user opens or imports them.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ABAP developers often inspect a main object together with includes, function modules, classes or related programs in the same Eclipse workspace.
 - Project owner decision: selected after the owner requested implementation of the first three proposed improvements.
+
+## ADR-010 - Local ABAP Dependency And Risk Analysis Before Prompt Construction
+
+- Context: the product must provide ABAP/Eclipse workflow value beyond passing open editor text to an external model provider.
+- Options considered: send raw editor context only, keep simple reference extraction, perform local ABAP dependency/risk analysis before prompt construction, or fetch remote ADT objects automatically.
+- Selected option: perform local read-only ABAP dependency and risk analysis over open editor/local workspace context before prompt construction.
+- Reason for selection: local analysis strengthens the proprietary context layer, improves transparency for the user, and avoids remote SAP reads or writes.
+- Expected benefit: the prompt and UI can include structured ABAP references, custom/Z object counts, unresolved references and risk signals before any model response is considered.
+- Risks/limitations: analysis is static and regex-based; it may miss dynamic ABAP constructs or flag statements that require human interpretation.
+- Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP developers reviewing ADT objects benefit from early visibility of includes, submitted programs, function modules, transactions, classes, tables and risk-relevant statements.
+- Product decision owner or rationale: selected to strengthen the product's own ABAP context engine while preserving the no automatic SAP write rule.
+
+## ADR-011 - Copy-Only Suggested Change Review
+
+- Context: suggested ABAP changes should be easier to review without introducing automatic SAP writes or activation.
+- Options considered: leave suggestions only in the response text, add a copy-only review panel, or implement direct write-back into SAP/ADT.
+- Selected option: add a copy-only suggested change review panel that extracts fenced ABAP code, adds a manual-review header and exposes a `Copy suggestion` button.
+- Reason for selection: this provides a clearer review workflow while preserving the rule that all SAP changes remain manual.
+- Expected benefit: developers can distinguish analysis text from proposed code, copy a reviewed block intentionally, and retain trace text indicating manual review is required.
+- Risks/limitations: the first version extracts only the first fenced code block and is not a full side-by-side diff viewer.
+- Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP code suggestions can be reviewed and copied into ADT manually without hidden repository modification.
+- Product decision owner or rationale: selected as the first review workflow step; automatic SAP writes remain out of scope.
