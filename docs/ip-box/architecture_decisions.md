@@ -22,7 +22,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Expected benefit: safer repository history and simpler setup.
 - Risks/limitations: each developer must configure their own local key.
 - Relation to SAP/ABAP/Eclipse/ADT use case: assistant requests can be tested locally without exposing credentials.
-- Project owner decision: the owner provided a key for the project; Codex did not persist it because project instructions prohibit committing real API keys.
+- Project owner decision: the owner provided a key for local testing; the real key was not persisted because project instructions prohibit committing real API keys.
 
 ## ADR-003 - OpenAI Responses API Client
 

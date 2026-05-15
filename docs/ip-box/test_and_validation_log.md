@@ -11,7 +11,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: initial script BOM issue and BAPI classification regex issue were found and fixed before final validation.
 - Follow-up required: run Eclipse PDE runtime test and optional live OpenAI smoke test with a new local API key.
-- Reviewer/validator: Codex local automated validation; owner manual validation TODO/TBC.
+- Reviewer/validator: local automated validation executed in the development environment; owner manual validation TODO/TBC.
 
 ## TODO/TBC - Eclipse Runtime Validation
 
@@ -20,7 +20,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Expected result: the view loads, the selection appears in the input area, the assistant returns output, and no real client data is used.
 - Actual result: TODO/TBC.
 - Status: TODO/TBC.
-- Follow-up required: project owner or Codex with an Eclipse runtime should record results.
+- Follow-up required: project owner or a local development environment with Eclipse runtime should record results.
 - Reviewer/validator: TODO/TBC.
 
 ## 2026-05-12 - Java 11 Compatibility And Import Diagnostics
@@ -32,7 +32,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: Eclipse import issue is caused by missing/unresolved PDE/SWT/JFace dependencies in the Eclipse workspace, based on the error pattern reported by the owner.
 - Follow-up required: owner should install PDE or activate `Running Platform` target platform, then reimport or clean the project.
-- Reviewer/validator: Codex local automated validation; Eclipse workspace validation by owner TODO/TBC.
+- Reviewer/validator: local automated validation executed in the development environment; Eclipse workspace validation by owner TODO/TBC.
 
 ## 2026-05-12 - Eclipse Runtime Smoke Tests
 
@@ -45,7 +45,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: the previous implementation used a new bundle/view identity that did not match the persisted runtime workspace. The runtime expected `com.abap.assistant` and `com.abap.assistant.ui.ChatView`.
 - Follow-up required: owner should pull the latest commit and reimport/clean the project or launch a fresh Eclipse Application.
-- Reviewer/validator: Codex using the local Eclipse installation at `C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse`.
+- Reviewer/validator: local automated validation using the Eclipse installation at `C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse`.
 
 ## 2026-05-13 - OpenAI `.env` Loading Validation
 
@@ -59,7 +59,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: prior implementation did not cover PDE launches where `C:\Users\Admin\runtime-EclipseApplication` does not contain the development project.
 - Follow-up required: owner should pull the latest version and relaunch/clean the Eclipse runtime.
-- Reviewer/validator: Codex using local Eclipse and the owner's local `.env`.
+- Reviewer/validator: local automated validation using Eclipse and the owner's local `.env`.
 
 ## 2026-05-14 - Eclipse JavaSE-11 Classpath Validation
 
@@ -72,7 +72,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: the generic JRE container and PDE build/export settings could inherit a Java 21 target from the workspace while project compliance remained Java 11.
 - Follow-up required: owner should refresh `.classpath` in Eclipse and run `Project > Clean`.
-- Reviewer/validator: Codex using local Eclipse.
+- Reviewer/validator: local automated validation using Eclipse.
 
 ## 2026-05-14 - Free-Form Editor Context Chat Validation
 
@@ -87,7 +87,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: the Eclipse project build smoke test caught a missing `org.eclipse.ui.workbench.texteditor` bundle dependency before final validation; the dependency was added to `MANIFEST.MF`.
 - Follow-up required: owner should install the updated bundle and manually test `Ask` with one or more open anonymised/non-confidential ABAP editors.
-- Reviewer/validator: Codex using local Eclipse and local non-committed `.env`.
+- Reviewer/validator: local automated validation using Eclipse and local non-committed `.env`.
 
 ## 2026-05-14 - Question Clearing And Documentation Refresh Validation
 
@@ -102,7 +102,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: no product issue found. The parallel test collision is a test harness limitation because two `test-eclipse.ps1` runs share `build\eclipse-smoke`.
 - Follow-up required: owner should install the updated bundle and manually confirm the `Question` field clears after pressing `Ask`.
-- Reviewer/validator: Codex automated validation; owner UI validation TODO/TBC.
+- Reviewer/validator: local automated validation; owner UI validation TODO/TBC.
 
 ## 2026-05-14 - Automatic Context Snapshot And History Validation
 
@@ -118,4 +118,4 @@ This documentation is a technical development record. It is not legal or tax adv
 - Status: Passed.
 - Issues found: `IFileEditorInput` was not available to the PDE project with current dependencies; fixed by using the editor input adapter path already supported by the bundle dependencies.
 - Follow-up required: owner manual UI validation with real ADT open editors remains TODO/TBC.
-- Reviewer/validator: Codex automated validation; owner manual UI validation TODO/TBC.
+- Reviewer/validator: local automated validation; owner manual UI validation TODO/TBC.

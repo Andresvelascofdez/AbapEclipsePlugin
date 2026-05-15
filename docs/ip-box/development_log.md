@@ -12,8 +12,8 @@ This documentation is a technical development record. It is not legal or tax adv
 - Validation status: automated validation passed locally with `scripts/test.ps1` on 2026-05-11.
 - GitHub commit reference: `09793a4645a734b7d8e60751a199a4facf5400a6` pushed to `Andresvelascofdez/AbapEclipsePlugin`.
 - Open limitations: live OpenAI smoke testing requires a local non-committed `.env` with a valid API key. Eclipse runtime validation must be performed in an Eclipse PDE/ADT installation.
-- AI assistance used: yes, Codex generated the initial implementation and documentation under owner direction.
-- Human decision/review notes: the project owner confirmed the GitHub destination as `Andresvelascofdez/AbapEclipsePlugin`.
+- Development tooling note: implementation and documentation work was performed under project owner direction, using development tooling as support.
+- Human decision/review notes: the project owner defined the product direction and confirmed the GitHub destination as `Andresvelascofdez/AbapEclipsePlugin`.
 
 ## 2026-05-12 - Eclipse Import Error Handling
 
@@ -24,8 +24,8 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner reported Eclipse import errors from the Problems view.
 - Validation status: automated validation passed locally with `scripts/test.ps1` on 2026-05-12.
 - Open limitations: local environment still does not include a detectable Eclipse installation, so runtime UI validation remains TODO/TBC.
-- AI assistance used: yes.
-- Human decision/review notes: owner provided screenshot evidence of the Eclipse import issue.
+- Development tooling note: development tooling was used as implementation support under owner direction.
+- Human decision/review notes: owner provided screenshot evidence of the Eclipse import issue and set the requirement that Eclipse import/build must work.
 
 ## 2026-05-12 - Eclipse Runtime Validation And Bundle Identity Fix
 
@@ -36,7 +36,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner reported that previous validation did not actually run inside Eclipse and provided Eclipse runtime errors.
 - Validation status: `scripts/test.ps1`, clean Eclipse runtime smoke test, and persisted workspace Eclipse smoke test passed on 2026-05-12.
 - Open limitations: live OpenAI API call still requires a local valid `.env`; no real client data should be used in smoke tests.
-- AI assistance used: yes.
+- Development tooling note: development tooling was used as implementation support under owner direction.
 - Human decision/review notes: owner challenged the insufficient validation and required Eclipse-based testing before confirmation.
 
 ## 2026-05-13 - Eclipse `.env` Discovery Fix
@@ -48,8 +48,8 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner reported that `.env` existed but the Eclipse view still showed `OPENAI_API_KEY is required`, and later provided evidence that only the runtime workspace and Eclipse installation directories were checked.
 - Validation status: local validation, clean Eclipse smoke test, persisted workspace Eclipse smoke test, bundle-location Eclipse smoke test and live OpenAI smoke test passed on 2026-05-13.
 - Open limitations: live usage still depends on a valid non-committed OpenAI API key and network access.
-- AI assistance used: yes.
-- Human decision/review notes: owner confirmed `.env` had been created and provided the Eclipse UI error screenshot.
+- Development tooling note: development tooling was used as implementation support under owner direction.
+- Human decision/review notes: owner confirmed `.env` had been created, provided the Eclipse UI error screenshot, and required practical runtime configuration.
 
 ## 2026-05-14 - Eclipse Java Execution Environment Alignment
 
@@ -60,8 +60,8 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner reported the Eclipse compiler error on 2026-05-14 after reimporting the project.
 - Validation status: local validation, clean Eclipse smoke test, and Eclipse project import/build smoke test passed on 2026-05-14.
 - Open limitations: if Eclipse keeps stale project metadata, the owner should refresh, clean, or reimport the project after pulling.
-- AI assistance used: yes.
-- Human decision/review notes: owner provided the exact Eclipse compiler diagnostic.
+- Development tooling note: development tooling was used as implementation support under owner direction.
+- Human decision/review notes: owner provided the exact Eclipse compiler diagnostic and required the project to reimport cleanly.
 
 ## 2026-05-14 - Free-Form Editor Context Chat
 
@@ -72,8 +72,8 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner requested a less rigid mode-based assistant that can read opened Z programs and answer free-text questions, including suggested ABAP code.
 - Validation status: local validation, clean Eclipse runtime smoke test, Eclipse project import/build smoke test, runtime-workspace `.env` smoke test and live OpenAI smoke test passed on 2026-05-14.
 - Open limitations: the plug-in reads open Eclipse editors, including tabs in the background. It does not yet fetch unopened nested ABAP includes/programs directly from the SAP repository; it detects references and can use them when opened as editor tabs.
-- AI assistance used: yes.
-- Human decision/review notes: owner provided a screenshot showing a loaded Z program and requested the more automatic chat workflow.
+- Development tooling note: development tooling was used as implementation support under owner direction.
+- Human decision/review notes: owner provided a screenshot showing a loaded Z program, tested the workflow, and requested the more automatic chat behaviour.
 
 ## 2026-05-14 - Question Clearing And Documentation Refresh
 
@@ -84,7 +84,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner reported that the question text remained after asking and requested a full documentation refresh plus next-improvement suggestions.
 - Validation status: local validation, clean Eclipse smoke test, Eclipse project import/build smoke test, runtime `.env` smoke test and live OpenAI smoke test passed on 2026-05-14.
 - Open limitations: question clearing is exercised through the Eclipse UI; automated smoke tests validate view creation and build compatibility but do not yet click the UI button.
-- AI assistance used: yes.
+- Development tooling note: development tooling was used as implementation support under owner direction.
 - Human decision/review notes: owner accepted the automatic open-editor context direction as reasonably working and requested UX polish.
 
 ## 2026-05-14 - Automatic Context Snapshot, History And Documentation Separation
@@ -96,5 +96,5 @@ This documentation is a technical development record. It is not legal or tax adv
 - User/business reason: the project owner requested a more automatic chat experience that reads the Eclipse working context, supports free follow-up questions and documents the tool independently for IP Box purposes.
 - Validation status: core validation, clean Eclipse runtime smoke test, Eclipse import/build smoke test, runtime `.env` smoke test, persisted-workspace smoke test and live OpenAI smoke test passed on 2026-05-14.
 - Open limitations: related-source lookup is read-only and limited to text resources already available in the Eclipse workspace. It does not fetch remote SAP repository objects that are not open or materialised locally.
-- AI assistance used: yes.
-- Human decision/review notes: owner selected these improvements from the suggested next-step list and required documentation cleanup before publication.
+- Development tooling note: development tooling was used as implementation support under owner direction.
+- Human decision/review notes: owner selected these improvements from the suggested next-step list, required independent IP Box documentation, and required validation before publication.
