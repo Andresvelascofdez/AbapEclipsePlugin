@@ -9,7 +9,7 @@ Project repository:
 ## Current Behaviour
 
 - The Eclipse view is available at `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
-- The view is organized as a single chat: compact header, scrollable conversation transcript and bottom question composer.
+- The view is organized as a single chat: compact header, one read-only scrollable conversation transcript and bottom question composer.
 - The user writes a natural-language question in the bottom composer and presses `Ask`, or uses `Ctrl+Enter`.
 - On each accepted question, the composer clears immediately and the question is added to the conversation transcript.
 - The plug-in automatically reads every open Eclipse text editor tab, including background tabs that are not focused.
@@ -22,9 +22,9 @@ Project repository:
 - Each user message shows a compact context line with editor/source/reference/risk counts; the full dependency/risk summary remains internal to prompt construction.
 - Recent questions and answers in the same view session are included as conversation history, bounded locally to keep prompts controlled.
 - There is no visible context box and no manual context-loading button.
-- Assistant answers appear as conversation messages with `Copy response`.
-- Suggested code is returned as text and, when a fenced ABAP block is detected, shown inside the same assistant message as a `Suggested change` section.
-- `Copy suggestion` copies the suggested block with a manual-review header. The plug-in does not write to SAP, activate objects, or apply repository changes.
+- Assistant answers are appended to the same transcript. `Copy response` copies the latest assistant answer.
+- Suggested code is returned as text and, when a fenced ABAP block is detected, rendered inline in the same transcript as a differentiated `ABAP code` block.
+- `Copy ABAP code` copies the latest detected ABAP code block with a manual-review header. The plug-in does not write to SAP, activate objects, or apply repository changes.
 - `Clear chat` clears the visible transcript and bounded in-memory conversation history for the current view session.
 - OpenAI-style API keys, ticket references, handover references, invoice references, email addresses and SAP client numbers are redacted before sending prompts.
 
@@ -107,7 +107,7 @@ Explain this program, inspect related context, and list likely defects. If somet
 7. Confirm the user message shows a compact context line with editor/source/reference/risk counts.
 8. Confirm the response refers to the opened code and can discuss detected references, unresolved items or risk signals when relevant.
 9. Confirm a second question can refer back to the previous answer.
-10. If the response contains a fenced ABAP suggestion, confirm the same assistant message shows a `Suggested change` section and `Copy suggestion` copies text only.
+10. If the response contains a fenced ABAP suggestion, confirm the transcript shows an inline `ABAP code` block and `Copy ABAP code` copies text only.
 11. Confirm the response does not claim to apply changes.
 
 ## Installation Guide
@@ -118,9 +118,9 @@ See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md) and [do
 
 - Add a visual dependency graph showing detected includes, programs, function modules and classes with loaded/unresolved status.
 - Add optional ADT-aware remote object lookup after a deliberate user action, keeping it read-only.
-- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing the composer, rendering transcript messages and validating copy actions.
+- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing the composer, rendering transcript text and validating copy actions.
 - Add local prompt-size controls per workspace to tune max editors, related files and history length.
-- Enhance the suggested-change section into a richer side-by-side diff view.
+- Enhance inline ABAP code blocks into a richer side-by-side diff view when a full review workflow is needed.
 - Add privacy-preserving local usage/evidence logging outside committed source by default.
 
 ## OpenAI API

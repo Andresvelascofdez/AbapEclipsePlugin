@@ -6,13 +6,13 @@ This plan defines the validation required before confirming that ABAP Chat Assis
 
 - Runtime bundle id: `com.abap.assistant`.
 - Runtime view id/class: `com.abap.assistant.ui.ChatView`.
-- Current UI model: unified conversational view with compact header, scrollable transcript, bottom question composer, per-response copy actions and status line.
+- Current UI model: unified conversational view with compact header, one read-only scrollable transcript, bottom question composer, latest-response copy actions and status line.
 - Current context model: every open Eclipse text editor tab is read automatically when `Ask` is pressed.
 - Related context model: detected ABAP references are matched against text resources already present in the local Eclipse workspace and included when found.
 - Local analysis model: dependency and risk analyzers inspect ABAP text before prompt construction.
 - Conversation model: recent Q/A turns in the same view session are sent as bounded history.
 - Current write model: suggested ABAP code is text only; the plug-in does not write to SAP.
-- Review model: fenced ABAP suggestions are shown inside the assistant response as a `Suggested change` section with a manual-review header and copy-only button.
+- Review model: fenced ABAP suggestions are rendered inline in the transcript as differentiated `ABAP code` blocks; the latest code block can be copied with a manual-review header.
 
 ## Automated Tests
 
@@ -49,7 +49,7 @@ Expected result:
 - The smoke plug-in opens `ABAP Chat`.
 - The view class and site id are `com.abap.assistant.ui.ChatView`.
 - The view opens with the unified conversational UI.
-- The smoke test finds the transcript, bottom composer, `Ask`, `Clear chat`, status label and welcome/safety text.
+- The smoke test finds the single transcript, bottom composer, `Ask`, `Clear chat`, `Copy response`, `Copy ABAP code`, status label and welcome/safety text.
 - No ABAP Assistant view creation, icon or bundle resolution errors appear in the workspace log.
 
 ### 3. Eclipse Import/Build Smoke Test
@@ -178,10 +178,10 @@ Suggest a safe ABAP change for this code. Return only code I can review manually
 Expected result:
 
 - The response may include fenced ABAP code.
-- The assistant response contains a `Suggested change` section when fenced ABAP code is present.
+- The transcript contains an inline `ABAP code` block when fenced ABAP code is present.
 - `Copy response` copies the complete answer text.
-- `Copy suggestion` copies text with a manual-review header.
-- The response and suggested-change section do not say the change was applied.
+- `Copy ABAP code` copies text with a manual-review header.
+- The response and inline code block do not say the change was applied.
 - The user remains responsible for copying, reviewing and activating code in SAP.
 
 ### Privacy

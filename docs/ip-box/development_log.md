@@ -123,3 +123,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Validation status: final local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`; bundle `.env` runtime smoke test passed with `scripts/test-eclipse.ps1 -UseBundleEnv`; live OpenAI smoke test passed with `scripts/smoke-openai.ps1`.
 - Open limitations: message rendering uses native SWT controls; richer syntax highlighting and side-by-side diffs remain planned/TBC.
 - Product decision/review notes: UI changes were limited to presentation and interaction. The local ABAP analysis layer, prompt construction, OpenAI client and SAP no-write rule remain intact.
+
+## 2026-05-17 - Single-Transcript Chat Rendering
+
+- Feature/module worked on: ABAP Chat Eclipse UI transcript rendering, code-block presentation, copy workflow and validation harness.
+- Technical objective: make the chat behave as one continuous scrollable conversation, with suggested ABAP code shown inline instead of as a secondary panel or nested message widget.
+- Implementation summary: replaced the message-card transcript with a single read-only `StyledText` transcript; rendered user, assistant, system and error messages into the same scrollable field; rendered fenced ABAP code as differentiated inline `ABAP code` blocks; moved copy actions to header-level `Copy response` and `Copy ABAP code` buttons; updated the Eclipse smoke test to assert the single-transcript UI controls.
+- Files changed: `src/com/abap/assistant/ui/ChatView.java`, `META-INF/MANIFEST.MF`, `scripts/test-eclipse.ps1`, `README.md`, `CHANGELOG.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, `docs/ECLIPSE_TEST_PLAN.md`, `docs/ip-box/**`.
+- User/business reason: improve readability and make the product feel like a natural development conversation while keeping code suggestions visibly separated and manual-review only.
+- Validation status: final local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`; bundle `.env` runtime smoke test passed with `scripts/test-eclipse.ps1 -UseBundleEnv`; live OpenAI smoke test passed with `scripts/smoke-openai.ps1`.
+- Open limitations: inline code blocks use native SWT styling rather than full Markdown rendering; richer syntax highlighting and side-by-side diff review remain planned/TBC.
+- Product decision/review notes: the change is limited to the presentation layer and copy workflow. Open-editor context collection, ABAP analysis, prompt construction, OpenAI integration and SAP no-write controls remain unchanged.

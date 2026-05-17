@@ -135,15 +135,15 @@ Si instalas el jar en un Eclipse normal, exporta el plug-in desde PDE y copia el
 La vista actual tiene:
 
 - cabecera compacta con titulo, selector de modo, `Clear chat` y estado
-- historial central de conversacion
-- mensajes separados para usuario, asistente, sistema y errores
+- un unico historial central de conversacion, de solo lectura y con scroll
+- mensajes de usuario, asistente, sistema y errores dentro del mismo historial
 - linea discreta de contexto en cada pregunta enviada
 - composer inferior para escribir preguntas
 - boton `Ask`
-- botones `Copy response` y `Copy suggestion` dentro de cada respuesta cuando aplica
-- seccion integrada `Suggested change` cuando la respuesta contiene un bloque ABAP
+- botones superiores `Copy response` y `Copy ABAP code` para la ultima respuesta
+- bloques `ABAP code` inline cuando la respuesta contiene codigo ABAP
 
-No hay botones de carga manual, caja visible de contexto ni panel secundario de resumen. El analisis de dependencias/riesgos se mantiene internamente para construir el prompt y se resume de forma compacta en la conversacion.
+No hay botones de carga manual, caja visible de contexto, panel secundario de resumen ni subventanas dentro de la respuesta. El analisis de dependencias/riesgos se mantiene internamente para construir el prompt y se resume de forma compacta en la conversacion.
 
 Flujo:
 
@@ -156,8 +156,8 @@ Flujo:
 7. El plug-in detecta referencias ABAP, objetos Z/custom y senales de riesgo locales antes de construir el prompt.
 8. El plug-in carga ficheros de texto relacionados cuando coinciden con recursos ya disponibles en el workspace.
 9. La respuesta aparece como mensaje del asistente y puede usar el analisis interno de dependencias/riesgos.
-10. Si la respuesta contiene un bloque ABAP, el mismo mensaje muestra una seccion `Suggested change` con cabecera de revision manual.
-11. `Copy suggestion` copia la propuesta; no escribe ni activa nada en SAP.
+10. Si la respuesta contiene un bloque ABAP, el mismo historial muestra un bloque inline `ABAP code`.
+11. `Copy ABAP code` copia la propuesta con cabecera de revision manual; no escribe ni activa nada en SAP.
 12. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
 
 Ejemplos de preguntas:
@@ -259,9 +259,9 @@ Sugiere un cambio ABAP seguro. Devuelve solo codigo para revisar manualmente.
 Resultado esperado:
 
 - Puede devolver codigo ABAP.
-- La respuesta muestra una seccion integrada `Suggested change` si devuelve codigo en formato fenced code.
+- La respuesta muestra un bloque inline `ABAP code` si devuelve codigo en formato fenced code.
 - `Copy response` copia la respuesta completa.
-- `Copy suggestion` copia texto con cabecera de revision manual.
+- `Copy ABAP code` copia texto con cabecera de revision manual.
 - No dice que lo haya aplicado.
 - El usuario decide si copia, adapta y activa el cambio.
 

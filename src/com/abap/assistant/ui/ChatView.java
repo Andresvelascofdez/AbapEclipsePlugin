@@ -9,6 +9,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.abap.assistant.core.AbapAnalysisResult;
 import com.abap.assistant.core.AbapContextClassifier;
@@ -36,16 +38,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -61,20 +64,23 @@ public final class ChatView extends ViewPart {
     private static final int MAX_RELATED_FILE_CHARS = 18000;
     private static final int MAX_HISTORY_TURNS = 6;
     private static final int MAX_HISTORY_CHARS = 18000;
-    private static final int RESPONSE_MAX_HEIGHT = 460;
-    private static final int REVIEW_MAX_HEIGHT = 280;
+    private static final Pattern FENCED_CODE_BLOCK = Pattern.compile("(?is)```\\s*(?:abap)?\\s*\\R?(.*?)```");
 
     private Combo modeCombo;
     private Text questionText;
     private Label statusLabel;
-    private ScrolledComposite transcriptScroll;
-    private Composite transcript;
-    private Composite pendingMessage;
+    private StyledText transcriptText;
     private Button askButton;
     private Button clearButton;
+    private Button copyResponseButton;
+    private Button copyCodeButton;
     private final AbapDependencyAnalyzer dependencyAnalyzer = new AbapDependencyAnalyzer();
     private final SuggestedChangeReviewBuilder reviewBuilder = new SuggestedChangeReviewBuilder();
     private final List<ConversationTurn> conversationHistory = new ArrayList<>();
+    private String lastResponseText = "";
+    private String lastSuggestionText = "";
+    private int pendingStart = -1;
+    private int pendingLength = 0;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -82,7 +88,7 @@ public final class ChatView extends ViewPart {
 
         Composite header = new Composite(parent, SWT.NONE);
         header.setLayoutData(fillHorizontal());
-        header.setLayout(new GridLayout(5, false));
+        header.setLayout(new GridLayout(7, false));
 
         Label title = new Label(header, SWT.NONE);
         title.setText("ABAP Chat Assistant");
@@ -104,21 +110,24 @@ public final class ChatView extends ViewPart {
         clearButton.setToolTipText("Clear the visible conversation history");
         clearButton.addListener(SWT.Selection, event -> clearChat());
 
+        copyResponseButton = new Button(header, SWT.PUSH);
+        copyResponseButton.setText("Copy response");
+        copyResponseButton.setToolTipText("Copy the last assistant response");
+        copyResponseButton.setEnabled(false);
+        copyResponseButton.addListener(SWT.Selection, event -> copyText(lastResponseText, "Response copied"));
+
+        copyCodeButton = new Button(header, SWT.PUSH);
+        copyCodeButton.setText("Copy ABAP code");
+        copyCodeButton.setToolTipText("Copy the last ABAP code block with the manual-review header");
+        copyCodeButton.setEnabled(false);
+        copyCodeButton.addListener(SWT.Selection, event -> copyText(lastSuggestionText, "ABAP code copied for manual review"));
+
         statusLabel = new Label(header, SWT.NONE);
         statusLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 
-        transcriptScroll = new ScrolledComposite(parent, SWT.BORDER | SWT.V_SCROLL);
-        transcriptScroll.setExpandHorizontal(true);
-        transcriptScroll.setExpandVertical(true);
-        transcriptScroll.setLayoutData(fillBoth(460));
-
-        transcript = new Composite(transcriptScroll, SWT.NONE);
-        GridLayout transcriptLayout = new GridLayout(1, false);
-        transcriptLayout.marginWidth = 10;
-        transcriptLayout.marginHeight = 10;
-        transcriptLayout.verticalSpacing = 10;
-        transcript.setLayout(transcriptLayout);
-        transcriptScroll.setContent(transcript);
+        transcriptText = new StyledText(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
+        transcriptText.setEditable(false);
+        transcriptText.setLayoutData(fillBoth(520));
 
         Composite composer = new Composite(parent, SWT.NONE);
         composer.setLayoutData(fillHorizontal());
@@ -164,8 +173,10 @@ public final class ChatView extends ViewPart {
         AssistantMode mode = AssistantMode.values()[Math.max(0, modeCombo.getSelectionIndex())];
         AssistantRequest request = new AssistantRequest(mode, question, context);
         questionText.setText("");
+        lastResponseText = "";
+        lastSuggestionText = "";
         addUserMessage(blankFallback(question), snapshot.contextLine(conversationHistory.size()));
-        pendingMessage = addSystemMessage("Thinking...");
+        addPendingMessage();
         setBusy(true);
         setStatus("Calling OpenAI - " + snapshot.openEditorCount() + " editor(s), "
             + snapshot.relatedContextCount() + " related source(s)");
@@ -214,6 +225,8 @@ public final class ChatView extends ViewPart {
         clearButton.setEnabled(!busy);
         modeCombo.setEnabled(!busy);
         questionText.setEnabled(!busy);
+        copyResponseButton.setEnabled(!busy && !lastResponseText.isBlank());
+        copyCodeButton.setEnabled(!busy && !lastSuggestionText.isBlank());
     }
 
     private void setStatus(String value) {
@@ -221,116 +234,73 @@ public final class ChatView extends ViewPart {
     }
 
     private void clearChat() {
-        for (Control child : transcript.getChildren()) {
-            child.dispose();
-        }
-        pendingMessage = null;
+        transcriptText.setText("");
+        pendingStart = -1;
+        pendingLength = 0;
+        lastResponseText = "";
+        lastSuggestionText = "";
         conversationHistory.clear();
         addSystemMessage("Chat cleared. Open ABAP/text editors will be read again on the next ask.");
         setStatus("Ready - chat cleared");
-        refreshTranscript();
+        setBusy(false);
     }
 
     private void addUserMessage(String question, String contextLine) {
-        Composite card = createMessageCard("You");
-        Label context = new Label(card, SWT.WRAP);
-        context.setText(contextLine);
-        context.setLayoutData(fillHorizontal());
-        Text body = new Text(card, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
-        body.setText(question);
-        body.setLayoutData(textBlockData(question, 52, 180));
+        appendRole("You");
+        appendMuted(contextLine);
+        appendPlain(question);
+        appendBlankLine();
         refreshTranscript();
     }
 
     private void addAssistantMessage(String answer, SuggestedChangeReview review, String privacyScope) {
-        Composite card = createMessageCard("Assistant");
-
-        Label metadata = new Label(card, SWT.WRAP);
-        metadata.setText("Privacy scope: " + privacyScope + " | Copy-only response. No SAP write or activation is performed.");
-        metadata.setLayoutData(fillHorizontal());
-
-        Text body = new Text(card, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
-        body.setText(answer == null ? "" : answer);
-        body.setLayoutData(textBlockData(answer, 120, RESPONSE_MAX_HEIGHT));
-
-        Composite actions = new Composite(card, SWT.NONE);
-        actions.setLayout(new GridLayout(review.hasSuggestion() ? 2 : 1, false));
-        actions.setLayoutData(fillHorizontal());
-
-        Button copyAnswer = new Button(actions, SWT.PUSH);
-        copyAnswer.setText("Copy response");
-        copyAnswer.addListener(SWT.Selection, event -> copyText(answer, "Response copied"));
-
+        lastResponseText = answer == null ? "" : answer;
+        lastSuggestionText = review.hasSuggestion() ? review.copyText() : "";
+        appendRole("Assistant");
+        appendMuted("Privacy scope: " + privacyScope + " | Copy-only response. No SAP write or activation is performed.");
+        appendAssistantContent(lastResponseText);
         if (review.hasSuggestion()) {
-            Button copySuggestion = new Button(actions, SWT.PUSH);
-            copySuggestion.setText("Copy suggestion");
-            copySuggestion.addListener(SWT.Selection, event -> copyText(review.copyText(), "Suggested block copied for manual review"));
-
-            Label reviewLabel = new Label(card, SWT.NONE);
-            reviewLabel.setText("Suggested change");
-            reviewLabel.setLayoutData(fillHorizontal());
-
-            Text reviewBody = new Text(card, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
-            reviewBody.setText(review.displayText());
-            reviewBody.setLayoutData(textBlockData(review.displayText(), 110, REVIEW_MAX_HEIGHT));
+            appendMuted("Use Copy ABAP code to copy the last code block with the manual-review header.");
         }
-
+        appendBlankLine();
+        setBusy(false);
         refreshTranscript();
     }
 
-    private Composite addSystemMessage(String message) {
-        Composite card = createMessageCard("System");
-        Label body = new Label(card, SWT.WRAP);
-        body.setText(message == null ? "" : message);
-        body.setLayoutData(fillHorizontal());
+    private void addSystemMessage(String message) {
+        appendRole("System");
+        appendPlain(message == null ? "" : message);
+        appendBlankLine();
         refreshTranscript();
-        return card;
     }
 
     private void addErrorMessage(String message) {
-        Composite card = createMessageCard("Error");
-        Label body = new Label(card, SWT.WRAP);
-        body.setText(message == null || message.isBlank() ? "Request failed." : message);
-        body.setLayoutData(fillHorizontal());
+        appendRole("Error");
+        appendPlain(message == null || message.isBlank() ? "Request failed." : message);
+        appendBlankLine();
         refreshTranscript();
     }
 
-    private Composite createMessageCard(String role) {
-        Composite card = new Composite(transcript, SWT.BORDER);
-        GridLayout layout = new GridLayout(1, false);
-        layout.marginWidth = 10;
-        layout.marginHeight = 8;
-        layout.verticalSpacing = 6;
-        card.setLayout(layout);
-        card.setLayoutData(fillHorizontal());
-
-        Label roleLabel = new Label(card, SWT.NONE);
-        roleLabel.setText(role);
-        roleLabel.setLayoutData(fillHorizontal());
-        return card;
+    private void addPendingMessage() {
+        pendingStart = transcriptText.getCharCount();
+        addSystemMessage("Thinking...");
+        pendingLength = transcriptText.getCharCount() - pendingStart;
     }
 
     private void removePendingMessage() {
-        if (pendingMessage != null && !pendingMessage.isDisposed()) {
-            pendingMessage.dispose();
+        if (pendingStart >= 0 && pendingLength > 0 && pendingStart + pendingLength <= transcriptText.getCharCount()) {
+            transcriptText.replaceTextRange(pendingStart, pendingLength, "");
         }
-        pendingMessage = null;
+        pendingStart = -1;
+        pendingLength = 0;
         refreshTranscript();
     }
 
     private void refreshTranscript() {
-        if (transcript == null || transcript.isDisposed()) {
+        if (transcriptText == null || transcriptText.isDisposed()) {
             return;
         }
-        transcript.layout(true, true);
-        transcriptScroll.setMinSize(transcript.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-        transcriptScroll.layout(true, true);
-        Display display = transcript.getDisplay();
-        display.asyncExec(() -> {
-            if (!transcriptScroll.isDisposed()) {
-                transcriptScroll.setOrigin(0, transcriptScroll.getContent().getSize().y);
-            }
-        });
+        transcriptText.setTopIndex(Math.max(0, transcriptText.getLineCount() - 1));
     }
 
     private void copyText(String value, String successStatus) {
@@ -345,6 +315,73 @@ public final class ChatView extends ViewPart {
         } finally {
             clipboard.dispose();
         }
+    }
+
+    private void appendAssistantContent(String value) {
+        String text = value == null ? "" : value;
+        Matcher matcher = FENCED_CODE_BLOCK.matcher(text);
+        int position = 0;
+        boolean foundCode = false;
+        while (matcher.find()) {
+            appendPlain(text.substring(position, matcher.start()));
+            appendCodeBlock(matcher.group(1));
+            position = matcher.end();
+            foundCode = true;
+        }
+        appendPlain(text.substring(position));
+        if (!foundCode && text.isBlank()) {
+            appendPlain("(empty response)");
+        }
+    }
+
+    private void appendRole(String role) {
+        appendStyled(role + System.lineSeparator(), SWT.BOLD, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+    }
+
+    private void appendMuted(String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        appendStyled(value.strip() + System.lineSeparator(), SWT.NORMAL, systemColor(SWT.COLOR_DARK_GRAY), null);
+    }
+
+    private void appendPlain(String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        appendStyled(value.strip() + System.lineSeparator(), SWT.NORMAL, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+    }
+
+    private void appendCodeBlock(String code) {
+        String normalizedCode = code == null ? "" : code.strip();
+        appendStyled("ABAP code" + System.lineSeparator(), SWT.BOLD, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+        String block = "----------------------------------------" + System.lineSeparator()
+            + normalizedCode + System.lineSeparator()
+            + "----------------------------------------" + System.lineSeparator();
+        appendStyled(block, SWT.NORMAL, systemColor(SWT.COLOR_LIST_FOREGROUND), systemColor(SWT.COLOR_WIDGET_BACKGROUND));
+    }
+
+    private void appendBlankLine() {
+        appendStyled(System.lineSeparator(), SWT.NORMAL, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+    }
+
+    private void appendStyled(String value, int fontStyle, Color foreground, Color background) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        int start = transcriptText.getCharCount();
+        transcriptText.append(value);
+        StyleRange range = new StyleRange();
+        range.start = start;
+        range.length = value.length();
+        range.fontStyle = fontStyle;
+        range.foreground = foreground;
+        range.background = background;
+        transcriptText.setStyleRange(range);
+    }
+
+    private Color systemColor(int colorId) {
+        return transcriptText.getDisplay().getSystemColor(colorId);
     }
 
     private EditorContext readEditor(IEditorPart editor) {
@@ -679,16 +716,6 @@ public final class ChatView extends ViewPart {
     private static GridData fillBoth(int heightHint) {
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.heightHint = heightHint;
-        return data;
-    }
-
-    private static GridData textBlockData(String value, int minHeight, int maxHeight) {
-        GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
-        String text = value == null ? "" : value;
-        int lineCount = Math.max(1, text.split("\\R", -1).length);
-        int wrappedLineEstimate = Math.max(0, text.length() / 110);
-        int height = 28 + (lineCount + wrappedLineEstimate) * 18;
-        data.heightHint = Math.max(minHeight, Math.min(maxHeight, height));
         return data;
     }
 

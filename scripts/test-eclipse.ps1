@@ -123,9 +123,8 @@ import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IStartup;
@@ -190,18 +189,19 @@ public final class SmokeStartup implements IStartup {
     }
 
     private static void assertConversationalUi(IViewPart view) throws Exception {
-        ScrolledComposite transcriptScroll = requiredField(view, "transcriptScroll", ScrolledComposite.class);
-        Composite transcript = requiredField(view, "transcript", Composite.class);
+        StyledText transcript = requiredField(view, "transcriptText", StyledText.class);
         org.eclipse.swt.widgets.Text composer = requiredField(view, "questionText", org.eclipse.swt.widgets.Text.class);
         Button askButton = requiredField(view, "askButton", Button.class);
         Button clearButton = requiredField(view, "clearButton", Button.class);
+        Button copyResponseButton = requiredField(view, "copyResponseButton", Button.class);
+        Button copyCodeButton = requiredField(view, "copyCodeButton", Button.class);
         Label statusLabel = requiredField(view, "statusLabel", Label.class);
 
-        if (transcriptScroll.isDisposed() || transcript.isDisposed()) {
-            throw new IllegalStateException("Conversation transcript controls are disposed.");
+        if (transcript.isDisposed()) {
+            throw new IllegalStateException("Conversation transcript control is disposed.");
         }
-        if (transcript.getChildren().length == 0) {
-            throw new IllegalStateException("Conversation transcript has no welcome/system message.");
+        if (!transcript.getText().contains("Suggested code is copy-only")) {
+            throw new IllegalStateException("Conversation transcript has no welcome/safety message.");
         }
         if (!"Ask about the open ABAP editors...".equals(composer.getMessage())) {
             throw new IllegalStateException("Bottom question composer placeholder was not found.");
@@ -211,6 +211,12 @@ public final class SmokeStartup implements IStartup {
         }
         if (!"Clear chat".equals(clearButton.getText())) {
             throw new IllegalStateException("Clear chat button text is unexpected: " + clearButton.getText());
+        }
+        if (!"Copy response".equals(copyResponseButton.getText())) {
+            throw new IllegalStateException("Copy response button text is unexpected: " + copyResponseButton.getText());
+        }
+        if (!"Copy ABAP code".equals(copyCodeButton.getText())) {
+            throw new IllegalStateException("Copy ABAP code button text is unexpected: " + copyCodeButton.getText());
         }
         if (statusLabel.getText() == null || statusLabel.getText().isBlank()) {
             throw new IllegalStateException("Status label is empty.");

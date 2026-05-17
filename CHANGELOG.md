@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.9 - 2026-05-17
+
+- Changed the Eclipse chat transcript to a single read-only scrollable text area instead of nested message cards or secondary panels.
+- Rendered fenced ABAP code inline inside the same transcript with a differentiated `ABAP code` block.
+- Replaced per-message copy widgets with header-level `Copy response` and `Copy ABAP code` actions for the latest assistant output.
+- Kept open-editor context collection, ABAP dependency/risk analysis, OpenAI integration and no automatic SAP write behaviour unchanged.
+- Updated Eclipse smoke validation to verify the single transcript, composer and copy controls.
+- Updated user-facing and IP Box documentation for the single-transcript conversational UI.
+
 ## 0.1.8 - 2026-05-17
 
 - Redesigned the Eclipse view as a unified conversation with compact header, scrollable transcript and bottom question composer.

@@ -138,9 +138,20 @@ This documentation is a technical development record. It is not legal or tax adv
 
 - Context: the stacked text-box layout made the plug-in feel like a technical console rather than a day-to-day development assistant.
 - Options considered: keep the existing SWT panels, embed an HTML/browser-based chat UI, or implement a unified chat-style interface with native SWT controls.
-- Selected option: implement a native SWT conversational view with compact header, scrollable transcript, bottom composer, message cards and integrated suggested-change sections.
+- Selected option: implement a native SWT conversational view with compact header, one read-only `StyledText` transcript, bottom composer, inline ABAP code blocks and header-level copy actions.
 - Reason for selection: native SWT keeps the plug-in compatible with Eclipse/PDE and avoids browser-runtime variability while making the workflow more approachable.
-- Expected benefit: clearer reading flow, more space for conversation, easier follow-up questions, per-response copy actions and a more natural ABAP review experience inside ADT.
-- Risks/limitations: native SWT message cards do not provide full rich Markdown rendering or syntax highlighting. A richer diff/code viewer can be added later if the product need justifies it.
+- Expected benefit: clearer reading flow, one continuous conversation, easier follow-up questions, copy actions that do not interrupt the transcript and a more natural ABAP review experience inside ADT.
+- Risks/limitations: native SWT styled text does not provide full rich Markdown rendering or syntax highlighting. A richer diff/code viewer can be added later if the product need justifies it.
 - Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP developers can keep the chat open beside ADT editors and review code suggestions in context without leaving Eclipse.
 - Product decision owner or rationale: selected after owner feedback requesting a more friendly chat-like interface while preserving all existing product safeguards.
+
+## ADR-014 - Single Transcript With Inline Code Blocks
+
+- Context: the first conversational UI still used nested controls inside each assistant message, which made suggested code appear like a separate lower panel instead of part of the conversation.
+- Options considered: keep nested message widgets, add collapsible suggested-change widgets, or render all chat content into one styled text transcript with differentiated inline code blocks.
+- Selected option: use one read-only `StyledText` transcript for system, user, assistant, error and ABAP code content, with copy controls outside the transcript.
+- Reason for selection: this matches the intended chat experience more closely and avoids secondary scroll areas inside responses.
+- Expected benefit: simpler visual model, better readability, less duplicated text and clearer separation between conversation content and copy actions.
+- Risks/limitations: inline code differentiation is visual but lightweight; it does not yet provide syntax highlighting, folding or side-by-side diffs.
+- Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP suggestions remain visible in context and copy-only, so developers can review them before any manual SAP action.
+- Product decision owner or rationale: selected after owner review of the first conversational UI and request for a single scrollable chat field.
