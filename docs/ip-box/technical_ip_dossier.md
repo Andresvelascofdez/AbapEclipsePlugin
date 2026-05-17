@@ -13,7 +13,7 @@ The intended user is an ABAP developer or SAP technical consultant working in Ec
 The candidate software asset for advisor review is the original ABAP Eclipse Assistant code and documentation maintained in this repository, including:
 
 - Eclipse plug-in source code and PDE metadata.
-- ABAP Chat view and UI workflows.
+- ABAP Chat view, conversational UI and review workflows.
 - ABAP context snapshot and local workspace source discovery.
 - ABAP dependency/reference detection.
 - ABAP risk signal detection.
@@ -40,6 +40,7 @@ The following are outside the owned software boundary and should not be treated 
 ### Implemented
 
 - Eclipse PDE plug-in and ABAP Chat view.
+- Unified conversational UI with compact header, transcript and bottom composer.
 - Free-form question workflow.
 - Automatic open editor context reading.
 - Related local workspace source lookup by detected reference names.
@@ -51,7 +52,8 @@ The following are outside the owned software boundary and should not be treated 
 - OpenAI Responses API client.
 - Local ABAP dependency analyzer.
 - ABAP risk signal analyzer.
-- Copy-only suggested change review panel.
+- Copy-only suggested change review section.
+- Per-response copy controls and clear-chat workflow.
 - Safe-change manual review header generation.
 - Core tests and Eclipse smoke/build validation scripts.
 - IP Box product evidence documentation folder.
@@ -60,7 +62,7 @@ The following are outside the owned software boundary and should not be treated 
 
 - Related source lookup is limited to text resources already available in the local Eclipse workspace.
 - Risk signals are regex/static-analysis based and intentionally conservative.
-- Suggested change review is an MVP panel, not yet a full side-by-side diff viewer.
+- Suggested change review is an MVP integrated section, not yet a full side-by-side diff viewer.
 - No dedicated visual dependency graph or secondary context panel is currently shown in the Eclipse view.
 
 ### Planned/TBC
@@ -87,6 +89,7 @@ The product is not merely a model wrapper. Its proprietary software layer includ
 - Keeps suggested changes review-only.
 - Performs no automatic SAP writes, activation or repository modification.
 - Adds a manual-review header to copied suggestions.
+- Presents questions, answers, context metadata and suggested changes in one developer-focused conversation.
 - Supports repeatable ABAP analysis workflows inside Eclipse ADT.
 
 ## 6. Architecture
@@ -100,10 +103,10 @@ User
   -> Redaction / Classification
   -> Prompt Builder
   -> Model Client
-  -> Response / Suggested Change Review UI
+  -> Conversational Response / Suggested Change Review UI
 ```
 
-The Eclipse UI gathers the working context. The core package performs redaction, classification, dependency detection, risk detection and prompt construction. The model client is treated as an external provider dependency. The response is returned to the Eclipse view for human review.
+The Eclipse UI gathers the working context and renders the conversation. The core package performs redaction, classification, dependency detection, risk detection and prompt construction. The model client is treated as an external provider dependency. The response is returned to the Eclipse view for developer review.
 
 ## 7. Safety Model
 
@@ -111,7 +114,7 @@ The Eclipse UI gathers the working context. The core package performs redaction,
 - No automatic SAP activation.
 - No automatic repository write-back.
 - Suggested code remains text for manual review.
-- Fenced ABAP suggestions are shown in a review panel and copied with a manual-review header.
+- Fenced ABAP suggestions are shown in an integrated review section and copied with a manual-review header.
 - The developer must decide whether to copy, adapt, test and activate any suggested change.
 - Future diff/review functionality must preserve the no-write rule unless a separate safe write integration is explicitly designed, implemented and tested.
 

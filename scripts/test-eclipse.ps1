@@ -28,7 +28,13 @@ $sourcesFile = Join-Path $buildRoot "sources.txt"
 $smokeSourcesFile = Join-Path $buildRoot "smoke-sources.txt"
 $marker = Join-Path $buildRoot "marker.txt"
 $envProjectRoot = Join-Path $buildRoot "env-project"
-$productJar = Join-Path $dropins "com.abap.assistant_0.1.4.jar"
+$manifestContent = Get-Content -Path (Join-Path $root "META-INF\MANIFEST.MF") -Raw
+$bundleVersionMatch = [regex]::Match($manifestContent, "(?m)^Bundle-Version:\s*([^\r\n]+)")
+$bundleVersion = if ($bundleVersionMatch.Success) { $bundleVersionMatch.Groups[1].Value.Trim() -replace "\.qualifier$", "" } else { "0.0.0" }
+$bundleVersionParts = $bundleVersion.Split(".")
+$bundleVersionParts[$bundleVersionParts.Length - 1] = ([int]$bundleVersionParts[$bundleVersionParts.Length - 1] + 1).ToString()
+$bundleVersionUpper = [string]::Join(".", $bundleVersionParts)
+$productJar = Join-Path $dropins "com.abap.assistant_$bundleVersion.jar"
 $smokeJar = Join-Path $dropins "com.abap.assistant.smoke_0.1.0.jar"
 $expectedApiKey = if ($UseBundleEnv) { "smoke-bundle-key" } else { "smoke-test-key" }
 
@@ -83,8 +89,9 @@ Bundle-Version: 0.1.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
+ org.eclipse.swt,
  org.eclipse.ui,
- com.abap.assistant
+ com.abap.assistant;bundle-version="[$bundleVersion,$bundleVersionUpper)"
 Bundle-ActivationPolicy: lazy
 
 "@, [System.Text.UTF8Encoding]::new($false))
@@ -104,6 +111,7 @@ package com.abap.assistant.smoke;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -115,7 +123,11 @@ import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -166,6 +178,7 @@ public final class SmokeStartup implements IStartup {
                     if (!"com.abap.assistant.ui.ChatView".equals(view.getSite().getId())) {
                         throw new IllegalStateException("Unexpected view site id: " + view.getSite().getId());
                     }
+                    assertConversationalUi(view);
                     Files.writeString(Path.of(marker), "PASS");
                 } catch (Throwable throwable) {
                     writeFailure(marker, throwable);
@@ -174,6 +187,44 @@ public final class SmokeStartup implements IStartup {
                 }
             }
         });
+    }
+
+    private static void assertConversationalUi(IViewPart view) throws Exception {
+        ScrolledComposite transcriptScroll = requiredField(view, "transcriptScroll", ScrolledComposite.class);
+        Composite transcript = requiredField(view, "transcript", Composite.class);
+        org.eclipse.swt.widgets.Text composer = requiredField(view, "questionText", org.eclipse.swt.widgets.Text.class);
+        Button askButton = requiredField(view, "askButton", Button.class);
+        Button clearButton = requiredField(view, "clearButton", Button.class);
+        Label statusLabel = requiredField(view, "statusLabel", Label.class);
+
+        if (transcriptScroll.isDisposed() || transcript.isDisposed()) {
+            throw new IllegalStateException("Conversation transcript controls are disposed.");
+        }
+        if (transcript.getChildren().length == 0) {
+            throw new IllegalStateException("Conversation transcript has no welcome/system message.");
+        }
+        if (!"Ask about the open ABAP editors...".equals(composer.getMessage())) {
+            throw new IllegalStateException("Bottom question composer placeholder was not found.");
+        }
+        if (!"Ask".equals(askButton.getText())) {
+            throw new IllegalStateException("Ask button text is unexpected: " + askButton.getText());
+        }
+        if (!"Clear chat".equals(clearButton.getText())) {
+            throw new IllegalStateException("Clear chat button text is unexpected: " + clearButton.getText());
+        }
+        if (statusLabel.getText() == null || statusLabel.getText().isBlank()) {
+            throw new IllegalStateException("Status label is empty.");
+        }
+    }
+
+    private static <T> T requiredField(IViewPart view, String name, Class<T> type) throws Exception {
+        Field field = view.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        Object value = field.get(view);
+        if (!type.isInstance(value)) {
+            throw new IllegalStateException("Field " + name + " was not a " + type.getName() + ".");
+        }
+        return type.cast(value);
     }
 
     private static void createSmokeProject() throws Exception {

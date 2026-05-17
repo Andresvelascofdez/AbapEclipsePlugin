@@ -1,6 +1,6 @@
 # ABAP Chat Assistant
 
-ABAP Chat Assistant is an Eclipse PDE plug-in for SAP ABAP Development Tools workflows. It adds a free-form chat view inside Eclipse that reads the developer's open ABAP/text editor working set, sends a privacy-aware prompt to the OpenAI Responses API, and returns explanations, defect analysis, test ideas or suggested ABAP snippets for manual review.
+ABAP Chat Assistant is an Eclipse PDE plug-in for SAP ABAP Development Tools workflows. It adds a unified conversational assistant view inside Eclipse that reads the developer's open ABAP/text editor working set, sends a privacy-aware prompt to the OpenAI Responses API, and returns explanations, defect analysis, test ideas or suggested ABAP snippets for manual review.
 
 Project repository:
 
@@ -9,8 +9,9 @@ Project repository:
 ## Current Behaviour
 
 - The Eclipse view is available at `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
-- The user writes a natural-language question in `Question` and presses `Ask`.
-- On each accepted question, the `Question` box clears immediately.
+- The view is organized as a single chat: compact header, scrollable conversation transcript and bottom question composer.
+- The user writes a natural-language question in the bottom composer and presses `Ask`, or uses `Ctrl+Enter`.
+- On each accepted question, the composer clears immediately and the question is added to the conversation transcript.
 - The plug-in automatically reads every open Eclipse text editor tab, including background tabs that are not focused.
 - The active editor is included first, followed by the other open text editors.
 - The plug-in detects ABAP references such as `INCLUDE`, `SUBMIT`, `CALL FUNCTION`, `CALL TRANSACTION`, `PERFORM ... IN PROGRAM` and common class usages.
@@ -18,11 +19,13 @@ Project repository:
 - The plug-in detects ABAP risk signals such as `SELECT` inside `LOOP`, `COMMIT WORK`, `ROLLBACK WORK`, BDC usage, update task usage, database writes, custom table access, lock handling, authority checks and hardcoded sensitive values.
 - When those references match text files already present in the Eclipse workspace, the plug-in adds those related workspace sources to the prompt automatically.
 - References that cannot be resolved from the open editors or local workspace are still listed in the prompt as TODO/TBC context.
-- The dependency/risk summary remains internal to prompt construction so the chat view stays focused on the question, response and suggested-change review.
+- Each user message shows a compact context line with editor/source/reference/risk counts; the full dependency/risk summary remains internal to prompt construction.
 - Recent questions and answers in the same view session are included as conversation history, bounded locally to keep prompts controlled.
 - There is no visible context box and no manual context-loading button.
-- Suggested code is returned as text and, when a fenced ABAP block is detected, copied into a `Suggested change review` panel with a manual-review header.
-- The `Copy suggestion` button copies the suggested block for manual review only. The plug-in does not write to SAP, activate objects, or apply repository changes.
+- Assistant answers appear as conversation messages with `Copy response`.
+- Suggested code is returned as text and, when a fenced ABAP block is detected, shown inside the same assistant message as a `Suggested change` section.
+- `Copy suggestion` copies the suggested block with a manual-review header. The plug-in does not write to SAP, activate objects, or apply repository changes.
+- `Clear chat` clears the visible transcript and bounded in-memory conversation history for the current view session.
 - OpenAI-style API keys, ticket references, handover references, invoice references, email addresses and SAP client numbers are redacted before sending prompts.
 
 ## Limits
@@ -100,11 +103,12 @@ powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respo
 Explain this program, inspect related context, and list likely defects. If something is missing, mark it TODO/TBC.
 ```
 
-6. Confirm the `Question` box clears after pressing `Ask`.
-7. Confirm the response refers to the opened code and can discuss detected references, unresolved items or risk signals when relevant.
-8. Confirm a second question can refer back to the previous answer.
-9. If the response contains a fenced ABAP suggestion, confirm the review panel shows a manual-review header and `Copy suggestion` copies text only.
-10. Confirm the response does not claim to apply changes.
+6. Confirm the composer clears after pressing `Ask` and the question appears in the transcript.
+7. Confirm the user message shows a compact context line with editor/source/reference/risk counts.
+8. Confirm the response refers to the opened code and can discuss detected references, unresolved items or risk signals when relevant.
+9. Confirm a second question can refer back to the previous answer.
+10. If the response contains a fenced ABAP suggestion, confirm the same assistant message shows a `Suggested change` section and `Copy suggestion` copies text only.
+11. Confirm the response does not claim to apply changes.
 
 ## Installation Guide
 
@@ -113,11 +117,10 @@ See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md) and [do
 ## Suggested Next Improvements
 
 - Add a visual dependency graph showing detected includes, programs, function modules and classes with loaded/unresolved status.
-- Add an explicit "clear chat history" command for long Eclipse sessions.
 - Add optional ADT-aware remote object lookup after a deliberate user action, keeping it read-only.
-- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing `Question`, and validating the response/review panels.
+- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing the composer, rendering transcript messages and validating copy actions.
 - Add local prompt-size controls per workspace to tune max editors, related files and history length.
-- Enhance the suggested change review panel into a richer side-by-side diff view.
+- Enhance the suggested-change section into a richer side-by-side diff view.
 - Add privacy-preserving local usage/evidence logging outside committed source by default.
 
 ## OpenAI API

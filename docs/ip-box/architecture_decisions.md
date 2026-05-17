@@ -133,3 +133,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: users no longer see raw count summaries directly in the UI. If visibility is needed later, an optional collapsible diagnostic panel or dependency graph can be added.
 - Relation to SAP/ABAP/Eclipse/ADT workflow: ADT users can keep the assistant view beside ABAP editors without losing space to diagnostic context details during normal work.
 - Product decision owner or rationale: selected after owner feedback during manual Eclipse validation.
+
+## ADR-013 - Unified Conversational UI In Native SWT
+
+- Context: the stacked text-box layout made the plug-in feel like a technical console rather than a day-to-day development assistant.
+- Options considered: keep the existing SWT panels, embed an HTML/browser-based chat UI, or implement a unified chat-style interface with native SWT controls.
+- Selected option: implement a native SWT conversational view with compact header, scrollable transcript, bottom composer, message cards and integrated suggested-change sections.
+- Reason for selection: native SWT keeps the plug-in compatible with Eclipse/PDE and avoids browser-runtime variability while making the workflow more approachable.
+- Expected benefit: clearer reading flow, more space for conversation, easier follow-up questions, per-response copy actions and a more natural ABAP review experience inside ADT.
+- Risks/limitations: native SWT message cards do not provide full rich Markdown rendering or syntax highlighting. A richer diff/code viewer can be added later if the product need justifies it.
+- Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP developers can keep the chat open beside ADT editors and review code suggestions in context without leaving Eclipse.
+- Product decision owner or rationale: selected after owner feedback requesting a more friendly chat-like interface while preserving all existing product safeguards.

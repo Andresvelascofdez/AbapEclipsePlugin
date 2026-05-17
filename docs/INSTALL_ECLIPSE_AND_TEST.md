@@ -134,28 +134,29 @@ Si instalas el jar en un Eclipse normal, exporta el plug-in desde PDE y copia el
 
 La vista actual tiene:
 
-- selector de modo
+- cabecera compacta con titulo, selector de modo, `Clear chat` y estado
+- historial central de conversacion
+- mensajes separados para usuario, asistente, sistema y errores
+- linea discreta de contexto en cada pregunta enviada
+- composer inferior para escribir preguntas
 - boton `Ask`
-- caja `Question`
-- panel de respuesta
-- panel `Suggested change review`
-- boton `Copy suggestion`
-- estado inferior
+- botones `Copy response` y `Copy suggestion` dentro de cada respuesta cuando aplica
+- seccion integrada `Suggested change` cuando la respuesta contiene un bloque ABAP
 
-No hay botones de carga manual, caja visible de contexto ni panel secundario de resumen. El analisis de dependencias/riesgos se mantiene internamente para construir el prompt.
+No hay botones de carga manual, caja visible de contexto ni panel secundario de resumen. El analisis de dependencias/riesgos se mantiene internamente para construir el prompt y se resume de forma compacta en la conversacion.
 
 Flujo:
 
 1. Abre uno o varios editores ABAP en Eclipse.
 2. Opcionalmente abre objetos relacionados o confirma que sus ficheros fuente ya existen en el workspace local.
-3. Escribe una pregunta libre en `Question`.
-4. Pulsa `Ask`.
-5. La caja `Question` se limpia inmediatamente.
+3. Escribe una pregunta libre en el composer inferior.
+4. Pulsa `Ask` o usa `Ctrl+Enter`.
+5. El composer se limpia inmediatamente y la pregunta aparece en el historial.
 6. El plug-in lee automaticamente todos los editores de texto abiertos, tanto la pestana visible como las pestanas abiertas en segundo plano.
 7. El plug-in detecta referencias ABAP, objetos Z/custom y senales de riesgo locales antes de construir el prompt.
 8. El plug-in carga ficheros de texto relacionados cuando coinciden con recursos ya disponibles en el workspace.
-9. La respuesta aparece en el panel inferior y puede usar el analisis interno de dependencias/riesgos.
-10. Si la respuesta contiene un bloque ABAP, el panel `Suggested change review` muestra una propuesta con cabecera de revision manual.
+9. La respuesta aparece como mensaje del asistente y puede usar el analisis interno de dependencias/riesgos.
+10. Si la respuesta contiene un bloque ABAP, el mismo mensaje muestra una seccion `Suggested change` con cabecera de revision manual.
 11. `Copy suggestion` copia la propuesta; no escribe ni activa nada en SAP.
 12. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
 
@@ -203,7 +204,8 @@ Explica este programa y lista riesgos reales.
 
 Resultado esperado:
 
-- `Question` se borra.
+- El composer se borra.
+- La pregunta aparece como mensaje del usuario con una linea compacta de contexto.
 - La respuesta habla del programa abierto.
 - La respuesta no afirma que haya modificado SAP.
 
@@ -218,6 +220,7 @@ Analiza el flujo completo con todo lo abierto.
 
 Resultado esperado:
 
+- La pregunta aparece en el historial de conversacion.
 - La respuesta usa contexto de todas las pestanas.
 - Las referencias no disponibles aparecen como TODO/TBC.
 
@@ -243,6 +246,7 @@ Ahora dame una version mas corta centrada solo en defectos.
 Resultado esperado:
 
 - La respuesta entiende la continuidad de la conversacion.
+- `Clear chat` vacia la conversacion visible y reinicia el historial de la vista si se pulsa.
 
 ### Codigo Sugerido
 
@@ -255,7 +259,8 @@ Sugiere un cambio ABAP seguro. Devuelve solo codigo para revisar manualmente.
 Resultado esperado:
 
 - Puede devolver codigo ABAP.
-- El panel `Suggested change review` muestra el bloque si la respuesta lo devuelve en formato fenced code.
+- La respuesta muestra una seccion integrada `Suggested change` si devuelve codigo en formato fenced code.
+- `Copy response` copia la respuesta completa.
 - `Copy suggestion` copia texto con cabecera de revision manual.
 - No dice que lo haya aplicado.
 - El usuario decide si copia, adapta y activa el cambio.

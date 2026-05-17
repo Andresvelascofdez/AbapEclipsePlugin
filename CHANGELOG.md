@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.8 - 2026-05-17
+
+- Redesigned the Eclipse view as a unified conversation with compact header, scrollable transcript and bottom question composer.
+- Added transcript messages for user questions, assistant responses, system status and request errors.
+- Added compact per-question context metadata while keeping full dependency/risk analysis inside prompt construction.
+- Moved suggested ABAP changes into the assistant response as an integrated `Suggested change` section with copy-only controls.
+- Added per-response `Copy response`, retained `Copy suggestion`, added `Clear chat`, and kept the no automatic SAP write rule unchanged.
+- Updated documentation and validation records for the conversational UI.
+
 ## 0.1.7 - 2026-05-17
 
 - Removed the visible dependency/context summary panel from the Eclipse view to keep the plug-in UI focused on the question, answer and suggested-change review workflow.

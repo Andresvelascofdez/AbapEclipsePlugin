@@ -112,3 +112,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Validation status: local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`.
 - Open limitations: richer visual dependency graphs remain planned/TBC and should be optional or separately opened if implemented later.
 - Product decision/review notes: internal ABAP analysis remains part of the product architecture; only the permanent visual diagnostic panel was removed from the normal workflow.
+
+## 2026-05-17 - Unified Conversational Eclipse UI
+
+- Feature/module worked on: ABAP Chat Eclipse UI, suggested-change presentation, copy workflow and product documentation.
+- Technical objective: make the assistant view more usable and developer-focused by replacing stacked technical text panels with one conversational workflow while preserving current context, OpenAI and no-write behaviour.
+- Implementation summary: redesigned `ChatView` with a compact header, mode selector, `Clear chat`, scrollable transcript, bottom question composer, `Ctrl+Enter` send shortcut, user/assistant/system/error messages, per-question compact context metadata, per-response `Copy response`, and integrated `Suggested change` sections with copy-only suggested code. Extended the Eclipse runtime smoke test to verify the conversational UI structure.
+- Files changed: `src/com/abap/assistant/ui/ChatView.java`, `META-INF/MANIFEST.MF`, `scripts/test-eclipse.ps1`, `README.md`, `CHANGELOG.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, `docs/ECLIPSE_TEST_PLAN.md`, `docs/ip-box/**`.
+- User/business reason: improve readability and day-to-day usability for ABAP developers working beside ADT editors, without adding automatic SAP writes or changing the underlying context engine.
+- Validation status: final local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`; bundle `.env` runtime smoke test passed with `scripts/test-eclipse.ps1 -UseBundleEnv`; live OpenAI smoke test passed with `scripts/smoke-openai.ps1`.
+- Open limitations: message rendering uses native SWT controls; richer syntax highlighting and side-by-side diffs remain planned/TBC.
+- Product decision/review notes: UI changes were limited to presentation and interaction. The local ABAP analysis layer, prompt construction, OpenAI client and SAP no-write rule remain intact.

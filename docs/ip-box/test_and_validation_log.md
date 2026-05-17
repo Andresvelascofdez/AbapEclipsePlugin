@@ -145,3 +145,18 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: none in automated validation.
 - Follow-up required: manual screenshot evidence of the simplified view remains TODO/TBC after installing the updated build.
 - Reviewer/validator: local automated validation.
+
+## 2026-05-17 - Unified Conversational UI Validation
+
+- Tested feature: native SWT conversational chat layout, transcript rendering, bottom composer, integrated suggested-change section, per-response copy controls, smoke-test UI structure checks and unchanged Eclipse runtime creation.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Test scenario 4: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv -TimeoutSeconds 180`.
+- Test scenario 5: run `powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"`.
+- Expected result: core tests pass; clean Eclipse workspace imports/builds the project without Java or PDE markers; clean Eclipse runtime opens `ABAP Chat`, verifies the transcript, composer, `Ask`, `Clear chat`, status label and welcome/safety message, and reports no view creation or bundle resolution errors.
+- Actual result: all five commands passed. The live smoke test returned `OK` and did not expose the API key.
+- Status: Passed.
+- Issues found: the first enhanced runtime smoke test attempt resolved an older installed bundle and failed its new UI-structure assertion. The test harness was corrected to require the current bundle version range; the final runtime smoke tests passed.
+- Follow-up required: capture manual screenshot evidence after installing the updated build.
+- Reviewer/validator: local automated validation.
