@@ -43,7 +43,7 @@ The following are outside the owned software boundary and should not be treated 
 - Free-form question workflow.
 - Automatic open editor context reading.
 - Related local workspace source lookup by detected reference names.
-- Context summary display.
+- Internal dependency/risk summary for prompt construction.
 - Bounded conversation history.
 - `.env` discovery for Eclipse runtime usage.
 - Sensitive-data redaction.
@@ -58,10 +58,10 @@ The following are outside the owned software boundary and should not be treated 
 
 ### Partial
 
-- Dependency/context summary is currently text-based.
 - Related source lookup is limited to text resources already available in the local Eclipse workspace.
 - Risk signals are regex/static-analysis based and intentionally conservative.
 - Suggested change review is an MVP panel, not yet a full side-by-side diff viewer.
+- No dedicated visual dependency graph or secondary context panel is currently shown in the Eclipse view.
 
 ### Planned/TBC
 

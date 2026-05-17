@@ -122,7 +122,7 @@ This documentation is a technical development record. It is not legal or tax adv
 
 ## 2026-05-15 - ABAP Dependency, Risk And Review Validation
 
-- Tested feature: ABAP dependency analyzer, ABAP risk signal analyzer, prompt dependency/risk summary, suggested change review model and Eclipse dependency/context/review panel compilation.
+- Tested feature: ABAP dependency analyzer, ABAP risk signal analyzer, prompt dependency/risk summary, suggested change review model and Eclipse review panel compilation.
 - Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
 - Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
 - Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
@@ -130,5 +130,18 @@ This documentation is a technical development record. It is not legal or tax adv
 - Actual result: all three commands passed.
 - Status: Passed.
 - Issues found: initial risk detection did not catch variable names such as `lv_password`; the pattern was corrected and tests passed.
-- Follow-up required: manual Eclipse UI validation of the dependency/context summary panel and copy-only suggested change panel remains TODO/TBC.
+- Follow-up required: manual Eclipse UI validation of the simplified view and copy-only suggested change panel remains TODO/TBC.
+- Reviewer/validator: local automated validation.
+
+## 2026-05-17 - Simplified Chat View Validation
+
+- Tested feature: Eclipse chat view layout after removing the visible dependency/context summary panel, while retaining internal editor-context and ABAP dependency/risk prompt analysis.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Expected result: core tests pass; clean Eclipse workspace imports/builds the project without Java or PDE markers; clean Eclipse runtime opens `ABAP Chat` without view creation or bundle resolution errors.
+- Actual result: all three commands passed.
+- Status: Passed.
+- Issues found: none in automated validation.
+- Follow-up required: manual screenshot evidence of the simplified view remains TODO/TBC after installing the updated build.
 - Reviewer/validator: local automated validation.

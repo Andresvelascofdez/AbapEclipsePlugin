@@ -64,7 +64,6 @@ public final class ChatView extends ViewPart {
     private Text questionText;
     private Text outputText;
     private Label statusLabel;
-    private Text contextSummaryText;
     private Text reviewText;
     private Button askButton;
     private Button copySuggestionButton;
@@ -104,12 +103,8 @@ public final class ChatView extends ViewPart {
         questionText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         questionText.setLayoutData(fillBoth(100));
 
-        contextSummaryText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-        contextSummaryText.setLayoutData(fillBoth(120));
-        setContextSummary("Context: open ABAP/text editors will be read when you ask.");
-
         outputText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-        outputText.setLayoutData(fillBoth(250));
+        outputText.setLayoutData(fillBoth(360));
 
         reviewText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
         reviewText.setLayoutData(fillBoth(130));
@@ -138,7 +133,6 @@ public final class ChatView extends ViewPart {
         AssistantMode mode = AssistantMode.values()[Math.max(0, modeCombo.getSelectionIndex())];
         AssistantRequest request = new AssistantRequest(mode, question, context);
         questionText.setText("");
-        setContextSummary(snapshot.summaryPanel(conversationHistory.size()));
         lastSuggestionText = "";
         reviewText.setText("Suggested change review: waiting for response.");
         setBusy(true);
@@ -160,7 +154,6 @@ public final class ChatView extends ViewPart {
                         lastSuggestionText = review.copyText();
                         reviewText.setText(review.displayText());
                         addConversationTurn(question, response.text());
-                        setContextSummary(snapshot.summaryPanel(conversationHistory.size()));
                         setStatus("Done - " + response.privacyScope());
                         setBusy(false);
                     });
@@ -190,7 +183,6 @@ public final class ChatView extends ViewPart {
         askButton.setEnabled(!busy);
         modeCombo.setEnabled(!busy);
         questionText.setEnabled(!busy);
-        contextSummaryText.setEnabled(!busy);
         reviewText.setEnabled(!busy);
         copySuggestionButton.setEnabled(!busy && lastSuggestionText != null && !lastSuggestionText.isBlank());
     }
@@ -534,10 +526,6 @@ public final class ChatView extends ViewPart {
         return value.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9_/]", "");
     }
 
-    private void setContextSummary(String value) {
-        contextSummaryText.setText(value == null ? "" : value);
-    }
-
     private static GridData fillHorizontal() {
         return new GridData(SWT.FILL, SWT.CENTER, true, false);
     }
@@ -643,51 +631,6 @@ public final class ChatView extends ViewPart {
 
         private String originalExcerpt() {
             return combinedText(openEditors);
-        }
-
-        private String summaryPanel(int historyTurns) {
-            int characters = formatEditorContexts(openEditors).length() + formatEditorContexts(relatedContexts).length();
-            StringBuilder builder = new StringBuilder();
-            builder.append("Context summary:").append(System.lineSeparator());
-            builder.append("- Open editors: ").append(openEditors.size()).append(System.lineSeparator());
-            builder.append("- Related local sources: ").append(relatedContexts.size()).append(System.lineSeparator());
-            builder.append("- References detected: ").append(analysis.references().size()).append(System.lineSeparator());
-            builder.append("- Unresolved references: ").append(unresolvedReferences.size()).append(System.lineSeparator());
-            builder.append("- Custom/Z objects: ").append(analysis.customReferences().size()).append(System.lineSeparator());
-            builder.append("- Risk signals: ").append(analysis.riskSignals().size()).append(System.lineSeparator());
-            builder.append("- Context characters: ").append(characters).append(System.lineSeparator());
-            builder.append("- History turns: ").append(historyTurns);
-            appendRiskSignals(builder);
-            appendUnresolved(builder);
-            appendCustomObjects(builder);
-            return builder.toString();
-        }
-
-        private void appendRiskSignals(StringBuilder builder) {
-            if (analysis.riskSignals().isEmpty()) {
-                return;
-            }
-            builder.append(System.lineSeparator()).append(System.lineSeparator()).append("Risk signals:").append(System.lineSeparator());
-            analysis.riskSignals().stream().limit(8).forEach(signal ->
-                builder.append("- ").append(signal.display()).append(System.lineSeparator()));
-        }
-
-        private void appendUnresolved(StringBuilder builder) {
-            if (unresolvedReferences.isEmpty()) {
-                return;
-            }
-            builder.append(System.lineSeparator()).append("Unresolved:").append(System.lineSeparator());
-            unresolvedReferences.stream().limit(8).forEach(reference ->
-                builder.append("- ").append(reference).append(System.lineSeparator()));
-        }
-
-        private void appendCustomObjects(StringBuilder builder) {
-            if (analysis.customReferences().isEmpty()) {
-                return;
-            }
-            builder.append(System.lineSeparator()).append("Custom/Z objects:").append(System.lineSeparator());
-            analysis.customReferences().stream().limit(8).forEach(reference ->
-                builder.append("- ").append(reference.display()).append(System.lineSeparator()));
         }
 
         private static void appendSection(StringBuilder builder, String title, String content) {

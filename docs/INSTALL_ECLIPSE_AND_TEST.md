@@ -137,13 +137,12 @@ La vista actual tiene:
 - selector de modo
 - boton `Ask`
 - caja `Question`
-- resumen de dependencias/contexto
 - panel de respuesta
 - panel `Suggested change review`
 - boton `Copy suggestion`
 - estado inferior
 
-No hay botones de carga manual ni caja visible de contexto.
+No hay botones de carga manual, caja visible de contexto ni panel secundario de resumen. El analisis de dependencias/riesgos se mantiene internamente para construir el prompt.
 
 Flujo:
 
@@ -155,11 +154,10 @@ Flujo:
 6. El plug-in lee automaticamente todos los editores de texto abiertos, tanto la pestana visible como las pestanas abiertas en segundo plano.
 7. El plug-in detecta referencias ABAP, objetos Z/custom y senales de riesgo locales antes de construir el prompt.
 8. El plug-in carga ficheros de texto relacionados cuando coinciden con recursos ya disponibles en el workspace.
-9. La vista muestra un resumen: editores, fuentes relacionadas, referencias, referencias no resueltas, objetos Z/custom, senales de riesgo, caracteres e historial.
-10. La respuesta aparece en el panel inferior.
-11. Si la respuesta contiene un bloque ABAP, el panel `Suggested change review` muestra una propuesta con cabecera de revision manual.
-12. `Copy suggestion` copia la propuesta; no escribe ni activa nada en SAP.
-13. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
+9. La respuesta aparece en el panel inferior y puede usar el analisis interno de dependencias/riesgos.
+10. Si la respuesta contiene un bloque ABAP, el panel `Suggested change review` muestra una propuesta con cabecera de revision manual.
+11. `Copy suggestion` copia la propuesta; no escribe ni activa nada en SAP.
+12. La siguiente pregunta puede apoyarse en el historial reciente de la conversacion.
 
 Ejemplos de preguntas:
 
@@ -184,7 +182,7 @@ Lee automaticamente:
 - programas/includes/clases abiertos en pestanas de Eclipse
 - ficheros de texto relacionados ya presentes en el workspace local cuando su nombre/ruta coincide con referencias detectadas
 - historial reciente de preguntas y respuestas de la misma vista
-- resumen local de dependencias y senales de riesgo
+- resumen local interno de dependencias y senales de riesgo para el prompt
 
 No lee automaticamente:
 
@@ -206,7 +204,6 @@ Explica este programa y lista riesgos reales.
 Resultado esperado:
 
 - `Question` se borra.
-- El resumen muestra `1 editor`.
 - La respuesta habla del programa abierto.
 - La respuesta no afirma que haya modificado SAP.
 
@@ -221,7 +218,6 @@ Analiza el flujo completo con todo lo abierto.
 
 Resultado esperado:
 
-- El resumen muestra mas de un editor.
 - La respuesta usa contexto de todas las pestanas.
 - Las referencias no disponibles aparecen como TODO/TBC.
 
@@ -233,7 +229,6 @@ Resultado esperado:
 
 Resultado esperado:
 
-- El resumen muestra al menos una fuente relacionada si hay coincidencia local.
 - La respuesta distingue lo cargado de lo no disponible.
 
 ### Historial
@@ -247,7 +242,6 @@ Ahora dame una version mas corta centrada solo en defectos.
 
 Resultado esperado:
 
-- El resumen muestra `history 1 turn(s)` o superior.
 - La respuesta entiende la continuidad de la conversacion.
 
 ### Codigo Sugerido
@@ -272,5 +266,5 @@ Resultado esperado:
 - La UI antigua sigue apareciendo: reinstala/exporta el jar nuevo y reinicia Eclipse con `-clean`.
 - `Compliance level '11' is incompatible with target level '21'`: confirma `JavaSE-11` en `.classpath` y `javacSource = 11` / `javacTarget = 11` en `build.properties`; luego ejecuta `Project > Clean`.
 - La respuesta ignora una dependencia: abre esa dependencia como pestana o confirma que existe como fichero de texto en el workspace local.
-- El resumen muestra falsos positivos: recuerda que el analisis es estatico y conservador; usa el resultado como ayuda de revision, no como prueba final de comportamiento runtime.
+- La respuesta muestra falsos positivos de analisis: recuerda que el analisis es estatico y conservador; usa el resultado como ayuda de revision, no como prueba final de comportamiento runtime.
 - Error HTTP de OpenAI: revisa la clave, el modelo y conectividad.

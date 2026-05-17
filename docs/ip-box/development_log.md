@@ -101,3 +101,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Validation status: local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`.
 - Open limitations: dependency/risk analysis is static and conservative; review panel extracts only the first fenced ABAP code block; remote ADT object lookup, richer side-by-side diff view and local usage/evidence logging remain planned/TBC.
 - Product decision/review notes: the local ABAP analysis layer remains read-only, performs no SAP writes and supports human review of suggested changes.
+
+## 2026-05-17 - Simplified Chat View Layout
+
+- Feature/module worked on: ABAP Chat Eclipse UI layout and product documentation.
+- Technical objective: remove the secondary visible dependency/context panel from the plug-in view while preserving automatic editor-context reading, local ABAP dependency/risk analysis and suggested-change review.
+- Implementation summary: removed the read-only context summary widget from `ChatView`, removed UI-only summary rendering methods, expanded the response panel area, retained internal context snapshot construction and retained dependency/risk summary inclusion in prompt context.
+- Files changed: `src/com/abap/assistant/ui/ChatView.java`, `META-INF/MANIFEST.MF`, `README.md`, `CHANGELOG.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, `docs/ECLIPSE_TEST_PLAN.md`, `docs/ip-box/**`.
+- User/business reason: keep the Eclipse assistant compact and easier to use once automatic context loading has been validated in manual testing.
+- Validation status: local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`.
+- Open limitations: richer visual dependency graphs remain planned/TBC and should be optional or separately opened if implemented later.
+- Product decision/review notes: internal ABAP analysis remains part of the product architecture; only the permanent visual diagnostic panel was removed from the normal workflow.

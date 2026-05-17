@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.7 - 2026-05-17
+
+- Removed the visible dependency/context summary panel from the Eclipse view to keep the plug-in UI focused on the question, answer and suggested-change review workflow.
+- Kept the internal ABAP dependency/risk analysis, related-source lookup, unresolved-reference tracking and prompt context construction unchanged.
+- Expanded the response panel area after removing the secondary context panel.
+- Updated product documentation, Eclipse test guidance and IP Box records to reflect the simplified UI.
+
 ## 0.1.6 - 2026-05-15
 
 - Added a technical IP dossier focused on product architecture, owned software boundaries, evidence model and roadmap.

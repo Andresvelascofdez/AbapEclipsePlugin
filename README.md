@@ -18,7 +18,7 @@ Project repository:
 - The plug-in detects ABAP risk signals such as `SELECT` inside `LOOP`, `COMMIT WORK`, `ROLLBACK WORK`, BDC usage, update task usage, database writes, custom table access, lock handling, authority checks and hardcoded sensitive values.
 - When those references match text files already present in the Eclipse workspace, the plug-in adds those related workspace sources to the prompt automatically.
 - References that cannot be resolved from the open editors or local workspace are still listed in the prompt as TODO/TBC context.
-- A compact dependency/context summary panel is shown in the view, including editor count, related source count, detected references, unresolved references, custom/Z objects, risk signals, character count and history turns.
+- The dependency/risk summary remains internal to prompt construction so the chat view stays focused on the question, response and suggested-change review.
 - Recent questions and answers in the same view session are included as conversation history, bounded locally to keep prompts controlled.
 - There is no visible context box and no manual context-loading button.
 - Suggested code is returned as text and, when a fenced ABAP block is detected, copied into a `Suggested change review` panel with a manual-review header.
@@ -101,10 +101,10 @@ Explain this program, inspect related context, and list likely defects. If somet
 ```
 
 6. Confirm the `Question` box clears after pressing `Ask`.
-7. Confirm the context summary shows the number of editors, related sources, references, unresolved references, custom/Z objects, risk signals and history turns.
+7. Confirm the response refers to the opened code and can discuss detected references, unresolved items or risk signals when relevant.
 8. Confirm a second question can refer back to the previous answer.
 9. If the response contains a fenced ABAP suggestion, confirm the review panel shows a manual-review header and `Copy suggestion` copies text only.
-10. Confirm the response refers to the opened code and does not claim to apply changes.
+10. Confirm the response does not claim to apply changes.
 
 ## Installation Guide
 
@@ -115,7 +115,7 @@ See [docs/INSTALL_ECLIPSE_AND_TEST.md](docs/INSTALL_ECLIPSE_AND_TEST.md) and [do
 - Add a visual dependency graph showing detected includes, programs, function modules and classes with loaded/unresolved status.
 - Add an explicit "clear chat history" command for long Eclipse sessions.
 - Add optional ADT-aware remote object lookup after a deliberate user action, keeping it read-only.
-- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing `Question`, and verifying the context summary.
+- Add automated SWTBot-style UI interaction tests for pressing `Ask`, clearing `Question`, and validating the response/review panels.
 - Add local prompt-size controls per workspace to tune max editors, related files and history length.
 - Enhance the suggested change review panel into a richer side-by-side diff view.
 - Add privacy-preserving local usage/evidence logging outside committed source by default.

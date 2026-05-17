@@ -94,9 +94,9 @@ This documentation is a technical development record. It is not legal or tax adv
 
 - Context: the owner requested a more automatic assistant that behaves like a development chat over the available Eclipse working set, including related code where possible.
 - Options considered: keep open-editor-only context, add manual context buttons again, directly fetch remote SAP objects, or build a read-only context snapshot from open editors plus local workspace sources matching detected ABAP references.
-- Selected option: build a context snapshot on each accepted ask request. The snapshot reads open text editors, detects ABAP references, attempts read-only lookup of matching text resources already present in the Eclipse workspace, records unresolved references as TODO/TBC, includes bounded conversation history, and shows a compact summary in the view.
+- Selected option: build a context snapshot on each accepted ask request. The snapshot reads open text editors, detects ABAP references, attempts read-only lookup of matching text resources already present in the Eclipse workspace, records unresolved references as TODO/TBC, and includes bounded conversation history.
 - Reason for selection: this increases automation without introducing unapproved SAP writes or hidden remote repository access.
-- Expected benefit: fewer manual copy/paste steps, better follow-up questions, clearer visibility of what was sent to the assistant, and safer handling of missing dependencies.
+- Expected benefit: fewer manual copy/paste steps, better follow-up questions, controlled prompt construction, and safer handling of missing dependencies.
 - Risks/limitations: workspace filename/path matching cannot guarantee complete SAP dependency resolution. Remote objects not open or materialised locally remain unresolved until the user opens or imports them.
 - Relation to SAP/ABAP/Eclipse/ADT use case: ABAP developers often inspect a main object together with includes, function modules, classes or related programs in the same Eclipse workspace.
 - Project owner decision: selected after the owner requested implementation of the first three proposed improvements.
@@ -107,7 +107,7 @@ This documentation is a technical development record. It is not legal or tax adv
 - Options considered: send raw editor context only, keep simple reference extraction, perform local ABAP dependency/risk analysis before prompt construction, or fetch remote ADT objects automatically.
 - Selected option: perform local read-only ABAP dependency and risk analysis over open editor/local workspace context before prompt construction.
 - Reason for selection: local analysis strengthens the proprietary context layer, improves transparency for the user, and avoids remote SAP reads or writes.
-- Expected benefit: the prompt and UI can include structured ABAP references, custom/Z object counts, unresolved references and risk signals before any model response is considered.
+- Expected benefit: the prompt can include structured ABAP references, custom/Z object counts, unresolved references and risk signals before any model response is considered.
 - Risks/limitations: analysis is static and regex-based; it may miss dynamic ABAP constructs or flag statements that require human interpretation.
 - Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP developers reviewing ADT objects benefit from early visibility of includes, submitted programs, function modules, transactions, classes, tables and risk-relevant statements.
 - Product decision owner or rationale: selected to strengthen the product's own ABAP context engine while preserving the no automatic SAP write rule.
@@ -122,3 +122,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: the first version extracts only the first fenced code block and is not a full side-by-side diff viewer.
 - Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP code suggestions can be reviewed and copied into ADT manually without hidden repository modification.
 - Product decision owner or rationale: selected as the first review workflow step; automatic SAP writes remain out of scope.
+
+## ADR-012 - Simplified Chat UI With Internal Context Analysis
+
+- Context: manual testing showed that the visible dependency/context summary panel added visual clutter once automatic editor-context reading was working reliably.
+- Options considered: keep the secondary summary panel, make it collapsible, move all counts to the status line, or remove the visual panel while keeping internal dependency/risk analysis.
+- Selected option: remove the secondary visual context panel from `ChatView` and keep the local ABAP dependency/risk summary inside prompt construction.
+- Reason for selection: the main user workflow is asking questions, reading answers and reviewing suggested changes. The internal analysis remains valuable, but it does not need to occupy a permanent visible pane.
+- Expected benefit: cleaner Eclipse view with more space for responses and suggested-change review, while preserving the proprietary ABAP context engine.
+- Risks/limitations: users no longer see raw count summaries directly in the UI. If visibility is needed later, an optional collapsible diagnostic panel or dependency graph can be added.
+- Relation to SAP/ABAP/Eclipse/ADT workflow: ADT users can keep the assistant view beside ABAP editors without losing space to diagnostic context details during normal work.
+- Product decision owner or rationale: selected after owner feedback during manual Eclipse validation.

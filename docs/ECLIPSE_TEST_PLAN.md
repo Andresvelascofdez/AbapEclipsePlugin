@@ -6,7 +6,7 @@ This plan defines the validation required before confirming that ABAP Chat Assis
 
 - Runtime bundle id: `com.abap.assistant`.
 - Runtime view id/class: `com.abap.assistant.ui.ChatView`.
-- Current UI model: free-form question box, response panel, compact context summary and status line.
+- Current UI model: free-form question box, response panel, suggested-change review panel and status line.
 - Current context model: every open Eclipse text editor tab is read automatically when `Ask` is pressed.
 - Related context model: detected ABAP references are matched against text resources already present in the local Eclipse workspace and included when found.
 - Local analysis model: dependency and risk analyzers inspect ABAP text before prompt construction.
@@ -115,8 +115,6 @@ Explain this program and list likely defects.
 Expected result:
 
 - The question box clears after pressing `Ask`.
-- The context summary says one editor was sent.
-- The dependency/context summary panel is visible.
 - The response refers to the opened program.
 - The response does not claim to modify SAP.
 
@@ -133,8 +131,6 @@ Analyze the flow using all open editors. If a related object is missing, mark it
 Expected result:
 
 - The question box clears after pressing `Ask`.
-- The context summary shows the number of open editors.
-- The dependency/context summary lists detected references, unresolved references, custom/Z objects and risk signals when present.
 - The response uses the main program and open related objects.
 - Missing references are treated as TODO/TBC.
 
@@ -150,7 +146,6 @@ Use all loaded and related workspace context to explain the flow.
 
 Expected result:
 
-- The context summary shows related source count greater than zero when a matching workspace file exists.
 - The response distinguishes loaded context from unresolved references.
 - No remote SAP object is fetched without being opened or available locally.
 
@@ -165,7 +160,6 @@ Now summarize only the defects from your previous answer.
 
 Expected result:
 
-- The context summary shows at least one history turn.
 - The response can use the previous answer.
 - History remains bounded; very long sessions are truncated locally.
 
@@ -189,7 +183,7 @@ Expected result:
 
 Use anonymised placeholders only. If a test snippet contains ticket-like values or emails, confirm the response uses anonymised placeholders such as `TCKXXXXX` or `user@example.invalid`.
 
-### Dependency/Risk Summary Panel
+### Dependency/Risk Prompt Context
 
 1. Open a non-confidential ABAP sample containing an include, a function module call, a custom table select and one safe test risk signal such as `COMMIT WORK`.
 2. Ask:
@@ -200,10 +194,10 @@ Summarize the local dependency and risk findings before giving advice.
 
 Expected result:
 
-- The summary panel shows non-zero reference and risk counts.
-- Custom/Z objects are listed when present.
-- Unresolved references are listed as TODO/TBC context unless already open or available as local workspace text resources.
-- No full ABAP source is written to logs by this panel.
+- The response can summarize the detected reference and risk findings because the local analysis is included in the prompt.
+- Custom/Z objects are discussed when present.
+- Unresolved references are treated as TODO/TBC context unless already open or available as local workspace text resources.
+- The plug-in does not create a visual context panel and does not write full ABAP source to logs during this check.
 
 ## Known Limits
 
