@@ -66,6 +66,13 @@ public final class ChatView extends ViewPart {
     private static final int MAX_HISTORY_CHARS = 18000;
     private static final Pattern FENCED_CODE_BLOCK = Pattern.compile("(?is)```\\s*(?:abap)?\\s*\\R?(.*?)```");
 
+    private Color transcriptBackground;
+    private Color transcriptForeground;
+    private Color mutedForeground;
+    private Color userForeground;
+    private Color codeBackground;
+    private Color codeForeground;
+    private Color errorForeground;
     private Combo modeCombo;
     private Text questionText;
     private Label statusLabel;
@@ -84,6 +91,7 @@ public final class ChatView extends ViewPart {
 
     @Override
     public void createPartControl(Composite parent) {
+        initializeColors(parent.getDisplay());
         parent.setLayout(new GridLayout(1, false));
 
         Composite header = new Composite(parent, SWT.NONE);
@@ -127,6 +135,8 @@ public final class ChatView extends ViewPart {
 
         transcriptText = new StyledText(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
         transcriptText.setEditable(false);
+        transcriptText.setBackground(transcriptBackground);
+        transcriptText.setForeground(transcriptForeground);
         transcriptText.setLayoutData(fillBoth(520));
 
         Composite composer = new Composite(parent, SWT.NONE);
@@ -135,6 +145,8 @@ public final class ChatView extends ViewPart {
 
         questionText = new Text(composer, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         questionText.setMessage("Ask about the open ABAP editors...");
+        questionText.setBackground(transcriptBackground);
+        questionText.setForeground(transcriptForeground);
         questionText.setLayoutData(fillBoth(82));
         questionText.addListener(SWT.KeyDown, event -> {
             boolean ctrlEnter = (event.stateMask & SWT.CTRL) != 0
@@ -158,6 +170,34 @@ public final class ChatView extends ViewPart {
     @Override
     public void setFocus() {
         questionText.setFocus();
+    }
+
+    @Override
+    public void dispose() {
+        disposeColor(errorForeground);
+        disposeColor(codeForeground);
+        disposeColor(codeBackground);
+        disposeColor(userForeground);
+        disposeColor(mutedForeground);
+        disposeColor(transcriptForeground);
+        disposeColor(transcriptBackground);
+        super.dispose();
+    }
+
+    private void initializeColors(Display display) {
+        transcriptBackground = new Color(display, 39, 43, 45);
+        transcriptForeground = new Color(display, 238, 242, 244);
+        mutedForeground = new Color(display, 185, 196, 201);
+        userForeground = new Color(display, 224, 242, 255);
+        codeBackground = new Color(display, 27, 31, 34);
+        codeForeground = new Color(display, 255, 255, 255);
+        errorForeground = new Color(display, 255, 190, 190);
+    }
+
+    private static void disposeColor(Color color) {
+        if (color != null && !color.isDisposed()) {
+            color.dispose();
+        }
     }
 
     private void askAssistant() {
@@ -246,9 +286,9 @@ public final class ChatView extends ViewPart {
     }
 
     private void addUserMessage(String question, String contextLine) {
-        appendRole("You");
-        appendMuted(contextLine);
-        appendPlain(question);
+        appendRole("You", userForeground, SWT.RIGHT);
+        appendMuted(contextLine, SWT.RIGHT);
+        appendPlain(question, userForeground, SWT.RIGHT);
         appendBlankLine();
         refreshTranscript();
     }
@@ -275,8 +315,8 @@ public final class ChatView extends ViewPart {
     }
 
     private void addErrorMessage(String message) {
-        appendRole("Error");
-        appendPlain(message == null || message.isBlank() ? "Request failed." : message);
+        appendRole("Error", errorForeground, SWT.LEFT);
+        appendPlain(message == null || message.isBlank() ? "Request failed." : message, errorForeground, SWT.LEFT);
         appendBlankLine();
         refreshTranscript();
     }
@@ -335,53 +375,65 @@ public final class ChatView extends ViewPart {
     }
 
     private void appendRole(String role) {
-        appendStyled(role + System.lineSeparator(), SWT.BOLD, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+        appendRole(role, transcriptForeground, SWT.LEFT);
+    }
+
+    private void appendRole(String role, Color foreground, int alignment) {
+        appendStyled(role + System.lineSeparator(), SWT.BOLD, foreground, null, alignment);
     }
 
     private void appendMuted(String value) {
+        appendMuted(value, SWT.LEFT);
+    }
+
+    private void appendMuted(String value, int alignment) {
         if (value == null || value.isBlank()) {
             return;
         }
-        appendStyled(value.strip() + System.lineSeparator(), SWT.NORMAL, systemColor(SWT.COLOR_DARK_GRAY), null);
+        appendStyled(value.strip() + System.lineSeparator(), SWT.NORMAL, mutedForeground, null, alignment);
     }
 
     private void appendPlain(String value) {
+        appendPlain(value, transcriptForeground, SWT.LEFT);
+    }
+
+    private void appendPlain(String value, Color foreground, int alignment) {
         if (value == null || value.isBlank()) {
             return;
         }
-        appendStyled(value.strip() + System.lineSeparator(), SWT.NORMAL, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+        appendStyled(value.strip() + System.lineSeparator(), SWT.NORMAL, foreground, null, alignment);
     }
 
     private void appendCodeBlock(String code) {
         String normalizedCode = code == null ? "" : code.strip();
-        appendStyled("ABAP code" + System.lineSeparator(), SWT.BOLD, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+        appendStyled("ABAP code" + System.lineSeparator(), SWT.BOLD, codeForeground, null, SWT.LEFT);
         String block = "----------------------------------------" + System.lineSeparator()
             + normalizedCode + System.lineSeparator()
             + "----------------------------------------" + System.lineSeparator();
-        appendStyled(block, SWT.NORMAL, systemColor(SWT.COLOR_LIST_FOREGROUND), systemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        appendStyled(block, SWT.NORMAL, codeForeground, codeBackground, SWT.LEFT);
     }
 
     private void appendBlankLine() {
-        appendStyled(System.lineSeparator(), SWT.NORMAL, systemColor(SWT.COLOR_LIST_FOREGROUND), null);
+        appendStyled(System.lineSeparator(), SWT.NORMAL, transcriptForeground, null, SWT.LEFT);
     }
 
-    private void appendStyled(String value, int fontStyle, Color foreground, Color background) {
+    private void appendStyled(String value, int fontStyle, Color foreground, Color background, int alignment) {
         if (value == null || value.isEmpty()) {
             return;
         }
         int start = transcriptText.getCharCount();
         transcriptText.append(value);
+        int end = transcriptText.getCharCount();
         StyleRange range = new StyleRange();
         range.start = start;
         range.length = value.length();
         range.fontStyle = fontStyle;
-        range.foreground = foreground;
+        range.foreground = foreground == null ? transcriptForeground : foreground;
         range.background = background;
         transcriptText.setStyleRange(range);
-    }
-
-    private Color systemColor(int colorId) {
-        return transcriptText.getDisplay().getSystemColor(colorId);
+        int startLine = transcriptText.getLineAtOffset(start);
+        int endLine = transcriptText.getLineAtOffset(Math.max(start, end - 1));
+        transcriptText.setLineAlignment(startLine, endLine - startLine + 1, alignment);
     }
 
     private EditorContext readEditor(IEditorPart editor) {

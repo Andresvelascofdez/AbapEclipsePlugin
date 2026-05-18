@@ -136,7 +136,9 @@ La vista actual tiene:
 
 - cabecera compacta con titulo, selector de modo, `Clear chat` y estado
 - un unico historial central de conversacion, de solo lectura y con scroll
+- paleta oscura de alto contraste para que el texto se lea bien en temas oscuros de Eclipse
 - mensajes de usuario, asistente, sistema y errores dentro del mismo historial
+- mensajes del usuario alineados visualmente a la derecha y respuestas/sistema a la izquierda
 - linea discreta de contexto en cada pregunta enviada
 - composer inferior para escribir preguntas
 - boton `Ask`
@@ -205,8 +207,10 @@ Explica este programa y lista riesgos reales.
 Resultado esperado:
 
 - El composer se borra.
-- La pregunta aparece como mensaje del usuario con una linea compacta de contexto.
+- La pregunta aparece como mensaje del usuario, alineada a la derecha, con una linea compacta de contexto.
+- El texto se ve claro sobre fondo oscuro.
 - La respuesta habla del programa abierto.
+- La respuesta aparece a la izquierda y se lee correctamente.
 - La respuesta no afirma que haya modificado SAP.
 
 ### Varios Editores Abiertos
@@ -260,6 +264,7 @@ Resultado esperado:
 
 - Puede devolver codigo ABAP.
 - La respuesta muestra un bloque inline `ABAP code` si devuelve codigo en formato fenced code.
+- El bloque de codigo se muestra dentro del mismo historial y con texto legible.
 - `Copy response` copia la respuesta completa.
 - `Copy ABAP code` copia texto con cabecera de revision manual.
 - No dice que lo haya aplicado.

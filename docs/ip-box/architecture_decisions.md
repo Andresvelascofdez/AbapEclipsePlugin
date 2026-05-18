@@ -155,3 +155,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Risks/limitations: inline code differentiation is visual but lightweight; it does not yet provide syntax highlighting, folding or side-by-side diffs.
 - Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP suggestions remain visible in context and copy-only, so developers can review them before any manual SAP action.
 - Product decision owner or rationale: selected after owner review of the first conversational UI and request for a single scrollable chat field.
+
+## ADR-015 - Explicit Transcript Contrast And Native Line Alignment
+
+- Context: manual Eclipse testing showed that theme-derived SWT foreground colors could render transcript text too dark on a dark workbench background.
+- Options considered: rely on Eclipse theme defaults, move to an embedded browser/HTML chat renderer, return to separate widget cards, or keep the single native `StyledText` transcript with explicit colors and line alignment.
+- Selected option: keep the single native `StyledText` transcript, define explicit high-contrast SWT colors, right-align user message lines and keep assistant/system/error lines left-aligned.
+- Reason for selection: this preserves the single scrollable chat field and avoids browser-runtime variability while fixing readability in dark Eclipse themes.
+- Expected benefit: better day-to-day usability, clearer turn separation and more predictable rendering across Eclipse installations.
+- Risks/limitations: `StyledText` alignment is line-based rather than full responsive chat bubbles. Rich Markdown, syntax highlighting and advanced bubble layout remain planned/TBC if product value justifies them.
+- Relation to SAP/ABAP/Eclipse/ADT workflow: ABAP developers often keep the assistant beside source editors in dark themes; readable text and clear conversation turns reduce visual friction during code review.
+- Product decision owner or rationale: selected after owner feedback that text was unreadable and user/assistant turns needed clearer visual separation.

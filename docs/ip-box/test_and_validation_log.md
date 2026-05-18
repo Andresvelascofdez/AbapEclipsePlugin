@@ -175,3 +175,18 @@ This documentation is a technical development record. It is not legal or tax adv
 - Issues found: none in final automated validation.
 - Follow-up required: capture manual screenshot evidence after installing the updated build.
 - Reviewer/validator: local automated validation.
+
+## 2026-05-18 - High-Contrast Transcript And Alignment Validation
+
+- Tested feature: explicit transcript foreground/background colors, right-aligned user messages, left-aligned assistant/system/error messages, Eclipse runtime UI checks and Eclipse import/build validation.
+- Test scenario 1: run `powershell -ExecutionPolicy Bypass -File scripts/test.ps1`.
+- Test scenario 2: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse-project-build.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 240`.
+- Test scenario 3: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -TimeoutSeconds 180`.
+- Test scenario 4: run `powershell -ExecutionPolicy Bypass -File scripts/test-eclipse.ps1 -EclipseHome "C:\Users\Admin\Downloads\eclipse-java-2026-03-R-win32-x86_64\eclipse" -UseBundleEnv -TimeoutSeconds 180`.
+- Test scenario 5: run `powershell -ExecutionPolicy Bypass -File scripts/smoke-openai.ps1 -Prompt "Respond with exactly: OK"`.
+- Expected result: core tests pass; clean Eclipse workspace imports/builds the project without Java or PDE markers; runtime opens `ABAP Chat`; the smoke test verifies readable light transcript foreground, dark transcript background and right alignment for a user message; `.env` discovery remains valid; live OpenAI smoke test returns `OK`.
+- Actual result: all five commands passed. The live smoke test returned `OK` and did not expose the API key.
+- Status: Passed.
+- Issues found: the first import/build smoke attempt timed out because the local Eclipse installation contained stale `com.abap.assistant` bundle state pointing to a missing jar. The test harness was hardened to package the current product bundle in its temporary dropins area; the final import/build smoke test passed.
+- Follow-up required: install/export the updated bundle and capture manual screenshot evidence of the high-contrast transcript with anonymised or non-confidential code.
+- Reviewer/validator: local automated validation.

@@ -7,6 +7,7 @@ This plan defines the validation required before confirming that ABAP Chat Assis
 - Runtime bundle id: `com.abap.assistant`.
 - Runtime view id/class: `com.abap.assistant.ui.ChatView`.
 - Current UI model: unified conversational view with compact header, one read-only scrollable transcript, bottom question composer, latest-response copy actions and status line.
+- Current visual model: high-contrast dark transcript with user messages right-aligned and assistant/system/error messages left-aligned.
 - Current context model: every open Eclipse text editor tab is read automatically when `Ask` is pressed.
 - Related context model: detected ABAP references are matched against text resources already present in the local Eclipse workspace and included when found.
 - Local analysis model: dependency and risk analyzers inspect ABAP text before prompt construction.
@@ -50,6 +51,8 @@ Expected result:
 - The view class and site id are `com.abap.assistant.ui.ChatView`.
 - The view opens with the unified conversational UI.
 - The smoke test finds the single transcript, bottom composer, `Ask`, `Clear chat`, `Copy response`, `Copy ABAP code`, status label and welcome/safety text.
+- The smoke test verifies the transcript uses readable light foreground text on a dark background.
+- The smoke test injects a local user message and verifies it is right-aligned in the transcript.
 - No ABAP Assistant view creation, icon or bundle resolution errors appear in the workspace log.
 
 ### 3. Eclipse Import/Build Smoke Test
@@ -116,7 +119,8 @@ Explain this program and list likely defects.
 Expected result:
 
 - The composer clears after pressing `Ask`.
-- The user question appears in the transcript with a compact context line.
+- The user question appears in the transcript with a compact context line and is visually right-aligned.
+- User, assistant and code text are readable against the dark transcript background.
 - The response refers to the opened program.
 - The response does not claim to modify SAP.
 
@@ -179,6 +183,7 @@ Expected result:
 
 - The response may include fenced ABAP code.
 - The transcript contains an inline `ABAP code` block when fenced ABAP code is present.
+- The inline code block remains readable and visually separated inside the same transcript.
 - `Copy response` copies the complete answer text.
 - `Copy ABAP code` copies text with a manual-review header.
 - The response and inline code block do not say the change was applied.

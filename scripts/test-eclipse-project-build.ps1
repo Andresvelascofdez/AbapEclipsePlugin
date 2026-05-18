@@ -16,6 +16,7 @@ if (-not (Test-Path -LiteralPath $eclipseExe)) {
 & (Join-Path $PSScriptRoot "check-eclipse-prereqs.ps1") -EclipseHome $eclipseHomePath
 
 $buildRoot = Join-Path $root "build\eclipse-project-build"
+$classes = Join-Path $buildRoot "classes"
 $projectCopy = Join-Path $buildRoot "project"
 $smokeRoot = Join-Path $buildRoot "smoke-src"
 $smokeClasses = Join-Path $buildRoot "smoke-classes"
@@ -24,8 +25,13 @@ $smokeMetaInf = Join-Path $smokeRoot "META-INF"
 $dropins = Join-Path $buildRoot "dropins"
 $workspace = Join-Path $buildRoot "workspace"
 $configuration = Join-Path $buildRoot "configuration"
+$productSourcesFile = Join-Path $buildRoot "product-sources.txt"
 $sourcesFile = Join-Path $buildRoot "smoke-sources.txt"
 $marker = Join-Path $buildRoot "marker.txt"
+$manifestContent = Get-Content -Path (Join-Path $root "META-INF\MANIFEST.MF") -Raw
+$bundleVersionMatch = [regex]::Match($manifestContent, "(?m)^Bundle-Version:\s*([^\r\n]+)")
+$bundleVersion = if ($bundleVersionMatch.Success) { $bundleVersionMatch.Groups[1].Value.Trim() -replace "\.qualifier$", "" } else { "0.0.0" }
+$productJar = Join-Path $dropins "com.abap.assistant_$bundleVersion.jar"
 $smokeJar = Join-Path $dropins "com.abap.assistant.projectbuild_0.1.0.jar"
 
 if (Test-Path -LiteralPath $buildRoot) {
@@ -36,7 +42,7 @@ if (Test-Path -LiteralPath $buildRoot) {
     Remove-Item -LiteralPath $buildRoot -Recurse -Force
 }
 
-New-Item -ItemType Directory -Force -Path $projectCopy, $smokeClasses, $smokePackage, $smokeMetaInf, $dropins, $workspace, $configuration | Out-Null
+New-Item -ItemType Directory -Force -Path $classes, $projectCopy, $smokeClasses, $smokePackage, $smokeMetaInf, $dropins, $workspace, $configuration | Out-Null
 Copy-Item -LiteralPath (Join-Path $root ".classpath") -Destination $projectCopy
 Copy-Item -LiteralPath (Join-Path $root ".project") -Destination $projectCopy
 Copy-Item -LiteralPath (Join-Path $root "build.properties") -Destination $projectCopy
@@ -45,6 +51,18 @@ Copy-Item -LiteralPath (Join-Path $root "META-INF") -Destination $projectCopy -R
 Copy-Item -LiteralPath (Join-Path $root ".settings") -Destination $projectCopy -Recurse
 Copy-Item -LiteralPath (Join-Path $root "icons") -Destination $projectCopy -Recurse
 Copy-Item -LiteralPath (Join-Path $root "src") -Destination $projectCopy -Recurse
+
+$allProductSources = Get-ChildItem -Path (Join-Path $root "src") -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName
+[System.IO.File]::WriteAllLines($productSourcesFile, $allProductSources, [System.Text.UTF8Encoding]::new($false))
+& javac -encoding UTF-8 --release 11 -cp (Join-Path $plugins "*") -d $classes "@$productSourcesFile"
+if ($LASTEXITCODE -ne 0) {
+    throw "Eclipse plug-in compilation failed with exit code $LASTEXITCODE"
+}
+
+& jar --create --file $productJar --manifest (Join-Path $root "META-INF\MANIFEST.MF") -C $classes . -C $root plugin.xml -C $root icons
+if ($LASTEXITCODE -ne 0) {
+    throw "Product plug-in jar packaging failed with exit code $LASTEXITCODE"
+}
 
 [System.IO.File]::WriteAllText((Join-Path $smokeMetaInf "MANIFEST.MF"), @"
 Manifest-Version: 1.0

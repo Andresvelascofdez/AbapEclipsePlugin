@@ -112,6 +112,7 @@ package com.abap.assistant.smoke;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -120,6 +121,7 @@ import com.abap.assistant.core.DotEnvLoader;
 import com.abap.assistant.core.OpenAiSettings;
 import com.abap.assistant.eclipse.EclipseDotEnvLocator;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -200,8 +202,28 @@ public final class SmokeStartup implements IStartup {
         if (transcript.isDisposed()) {
             throw new IllegalStateException("Conversation transcript control is disposed.");
         }
+        org.eclipse.swt.graphics.RGB foreground = transcript.getForeground().getRGB();
+        org.eclipse.swt.graphics.RGB background = transcript.getBackground().getRGB();
+        if (foreground.red < 180 || foreground.green < 180 || foreground.blue < 180) {
+            throw new IllegalStateException("Conversation transcript foreground is not high contrast: " + foreground);
+        }
+        if (background.red > 90 || background.green > 90 || background.blue > 90) {
+            throw new IllegalStateException("Conversation transcript background is not dark enough: " + background);
+        }
         if (!transcript.getText().contains("Suggested code is copy-only")) {
             throw new IllegalStateException("Conversation transcript has no welcome/safety message.");
+        }
+        Method addUserMessage = view.getClass().getDeclaredMethod("addUserMessage", String.class, String.class);
+        addUserMessage.setAccessible(true);
+        addUserMessage.invoke(view, "smoke question", "Using 0 editor(s) | history 0");
+        int userOffset = transcript.getText().lastIndexOf("smoke question");
+        if (userOffset < 0) {
+            throw new IllegalStateException("Smoke user message was not rendered in the transcript.");
+        }
+        int userLine = transcript.getLineAtOffset(userOffset);
+        int userAlignment = transcript.getLineAlignment(userLine);
+        if (userAlignment != SWT.RIGHT) {
+            throw new IllegalStateException("User message line is not right-aligned.");
         }
         if (!"Ask about the open ABAP editors...".equals(composer.getMessage())) {
             throw new IllegalStateException("Bottom question composer placeholder was not found.");

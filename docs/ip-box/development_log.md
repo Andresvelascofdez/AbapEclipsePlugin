@@ -134,3 +134,14 @@ This documentation is a technical development record. It is not legal or tax adv
 - Validation status: final local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`; bundle `.env` runtime smoke test passed with `scripts/test-eclipse.ps1 -UseBundleEnv`; live OpenAI smoke test passed with `scripts/smoke-openai.ps1`.
 - Open limitations: inline code blocks use native SWT styling rather than full Markdown rendering; richer syntax highlighting and side-by-side diff review remain planned/TBC.
 - Product decision/review notes: the change is limited to the presentation layer and copy workflow. Open-editor context collection, ABAP analysis, prompt construction, OpenAI integration and SAP no-write controls remain unchanged.
+
+## 2026-05-18 - High-Contrast Transcript Readability
+
+- Feature/module worked on: ABAP Chat Eclipse UI transcript styling, message alignment and Eclipse validation scripts.
+- Technical objective: improve readability of the single transcript in dark Eclipse themes and make user/assistant turns visually easier to distinguish.
+- Implementation summary: added explicit SWT colors for transcript background, main text, muted metadata, user text, code blocks and errors; aligned user messages to the right while keeping assistant/system/error messages left-aligned; styled the bottom composer consistently; extended the Eclipse runtime smoke test to verify foreground/background contrast and user-message alignment; hardened the import/build smoke test by packaging the current bundle in its temporary dropins area.
+- Files changed: `src/com/abap/assistant/ui/ChatView.java`, `META-INF/MANIFEST.MF`, `scripts/test-eclipse.ps1`, `scripts/test-eclipse-project-build.ps1`, `README.md`, `CHANGELOG.md`, `docs/INSTALL_ECLIPSE_AND_TEST.md`, `docs/ECLIPSE_TEST_PLAN.md`, `docs/ip-box/**`.
+- User/business reason: make the tool more comfortable for daily ABAP/ADT review work and prevent unreadable text on dark workbench themes.
+- Validation status: local automated validation passed with `scripts/test.ps1`; Eclipse import/build smoke test passed with `scripts/test-eclipse-project-build.ps1`; clean Eclipse runtime smoke test passed with `scripts/test-eclipse.ps1`; bundle `.env` runtime smoke test passed with `scripts/test-eclipse.ps1 -UseBundleEnv`; live OpenAI smoke test passed with `scripts/smoke-openai.ps1`.
+- Open limitations: native SWT `StyledText` alignment is line-based. Full chat bubbles, richer Markdown and syntax highlighting remain planned/TBC.
+- Product decision/review notes: the change is a presentation-layer refinement. The local ABAP analysis layer, prompt construction, OpenAI client and SAP no-write controls remain unchanged.

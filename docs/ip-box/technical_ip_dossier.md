@@ -41,6 +41,7 @@ The following are outside the owned software boundary and should not be treated 
 
 - Eclipse PDE plug-in and ABAP Chat view.
 - Unified conversational UI with compact header, single scrollable transcript and bottom composer.
+- High-contrast transcript rendering with right-aligned user turns and left-aligned assistant/system turns.
 - Free-form question workflow.
 - Automatic open editor context reading.
 - Related local workspace source lookup by detected reference names.
@@ -89,7 +90,7 @@ The product is not merely a model wrapper. Its proprietary software layer includ
 - Keeps suggested changes review-only.
 - Performs no automatic SAP writes, activation or repository modification.
 - Adds a manual-review header to copied suggestions.
-- Presents questions, answers, context metadata and ABAP code blocks in one developer-focused conversation.
+- Presents questions, answers, context metadata and ABAP code blocks in one readable developer-focused conversation.
 - Supports repeatable ABAP analysis workflows inside Eclipse ADT.
 
 ## 6. Architecture

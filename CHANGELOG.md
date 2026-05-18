@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.10 - 2026-05-18
+
+- Changed the single transcript to use an explicit high-contrast dark palette for reliable readability across Eclipse themes.
+- Right-aligned user messages while keeping assistant, system and error messages left-aligned in the same scrollable transcript.
+- Kept open-editor context collection, ABAP dependency/risk analysis, OpenAI integration and no automatic SAP write behaviour unchanged.
+- Extended Eclipse smoke validation to verify transcript foreground/background contrast and user-message alignment.
+- Hardened the Eclipse import/build smoke test by packaging the current bundle in its temporary dropins area, avoiding stale installed-bundle state in the local Eclipse installation.
+- Updated user-facing and IP Box documentation for the readability-focused transcript refinement.
+
 ## 0.1.9 - 2026-05-17
 
 - Changed the Eclipse chat transcript to a single read-only scrollable text area instead of nested message cards or secondary panels.

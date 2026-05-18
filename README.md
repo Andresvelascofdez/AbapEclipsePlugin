@@ -10,6 +10,8 @@ Project repository:
 
 - The Eclipse view is available at `Window > Show View > Other > ABAP Chat Assistant > ABAP Chat`.
 - The view is organized as a single chat: compact header, one read-only scrollable conversation transcript and bottom question composer.
+- The transcript uses an explicit high-contrast dark palette so text remains readable across Eclipse themes.
+- User messages are visually right-aligned; system and assistant messages remain left-aligned.
 - The user writes a natural-language question in the bottom composer and presses `Ask`, or uses `Ctrl+Enter`.
 - On each accepted question, the composer clears immediately and the question is added to the conversation transcript.
 - The plug-in automatically reads every open Eclipse text editor tab, including background tabs that are not focused.
@@ -104,11 +106,12 @@ Explain this program, inspect related context, and list likely defects. If somet
 ```
 
 6. Confirm the composer clears after pressing `Ask` and the question appears in the transcript.
-7. Confirm the user message shows a compact context line with editor/source/reference/risk counts.
-8. Confirm the response refers to the opened code and can discuss detected references, unresolved items or risk signals when relevant.
-9. Confirm a second question can refer back to the previous answer.
-10. If the response contains a fenced ABAP suggestion, confirm the transcript shows an inline `ABAP code` block and `Copy ABAP code` copies text only.
-11. Confirm the response does not claim to apply changes.
+7. Confirm the user message is readable, visually right-aligned and shows a compact context line with editor/source/reference/risk counts.
+8. Confirm assistant/system text is readable and left-aligned.
+9. Confirm the response refers to the opened code and can discuss detected references, unresolved items or risk signals when relevant.
+10. Confirm a second question can refer back to the previous answer.
+11. If the response contains a fenced ABAP suggestion, confirm the transcript shows an inline `ABAP code` block and `Copy ABAP code` copies text only.
+12. Confirm the response does not claim to apply changes.
 
 ## Installation Guide
 
